@@ -25,7 +25,7 @@ public class AccessTokenController {
     @Value("49b1fc4106c9ec0c03875e4fb0279efd7703e0f4")
     private String clientSecret;
 
-    @GetMapping("/callback")
+    @GetMapping("/repository")
     public ResponseEntity<String> getUserInfo(@RequestParam String code) {
         String accessToken = getAccessToken(code);
         String userName = getUserName(accessToken);
