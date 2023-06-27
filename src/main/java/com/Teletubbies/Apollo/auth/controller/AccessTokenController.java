@@ -1,29 +1,28 @@
 package com.Teletubbies.Apollo.auth.controller;
 
-import com.Teletubbies.Apollo.auth.dto.AccessTokenRequest;
-import com.Teletubbies.Apollo.auth.dto.AccessTokenResponse;
 import com.Teletubbies.Apollo.auth.dto.MemberInfoResponse;
-import com.Teletubbies.Apollo.auth.oauth.service.OauthService;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
+import com.Teletubbies.Apollo.auth.service.OAuthService;
+import com.Teletubbies.Apollo.auth.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.http.HttpHeaders;
 
 @RestController
 public class AccessTokenController {
-    private final OauthService oauthService;
-    public AccessTokenController(OauthService oauthService){
-        this.oauthService = oauthService;
+    private final OAuthService oAuthService;
+    private final UserService userService;
+
+    public AccessTokenController(OAuthService oAuthService, UserService userService) {
+        this.oAuthService = oAuthService;
+        this.userService = userService;
     }
+
     @GetMapping("/repository")
     public ResponseEntity<String> getUserInfo(@RequestParam String code) {
-        String accessToken = oauthService.getAccessToken(code);
-        String userName = oauthService.getUserName(accessToken);
-        return ResponseEntity.ok(userName);
+        String accessToken = oAuthService.getAccessToken(code);
+        MemberInfoResponse memberInfoResponse = oAuthService.getUserInfo(accessToken).getBody();
+        userService.saveUser(memberInfoResponse);
+        return ResponseEntity.ok(memberInfoResponse.getEmail());
     }
 }
