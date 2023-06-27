@@ -1,5 +1,6 @@
 package com.Teletubbies.Apollo.auth.dto;
 
+import com.Teletubbies.Apollo.auth.domain.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,4 +19,8 @@ public class MemberInfoResponse {
 
     @JsonProperty("email")
     private String email;
+
+    public User changeDTOtoObj(MemberInfoResponse memberInfoResponse) {
+        return new User(memberInfoResponse);
+    }
 }

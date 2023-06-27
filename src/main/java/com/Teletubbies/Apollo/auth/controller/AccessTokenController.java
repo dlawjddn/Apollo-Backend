@@ -23,6 +23,6 @@ public class AccessTokenController {
         String accessToken = oAuthService.getAccessToken(code);
         MemberInfoResponse memberInfoResponse = oAuthService.getUserInfo(accessToken).getBody();
         userService.saveUser(memberInfoResponse);
-        return ResponseEntity.ok(memberInfoResponse.getEmail());
+        return ResponseEntity.ok("success");
     }
 }

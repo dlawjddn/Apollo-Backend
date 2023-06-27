@@ -1,13 +1,12 @@
 package com.Teletubbies.Apollo.auth.domain;
 
 import com.Teletubbies.Apollo.auth.dto.MemberInfoResponse;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
 
 @Entity
 @NoArgsConstructor
+@Table(name="user")
 public class User {
 
     @Id
