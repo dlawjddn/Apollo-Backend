@@ -11,7 +11,7 @@ public class MemberInfoResponse {
     private Long oauthId;
 
     @JsonProperty("login")
-    private String name;
+    private String login;
 
     @JsonProperty("name")
     private String username;
