@@ -12,7 +12,6 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class DeployService {
-
     public Map<Integer, String> execCommand() {
         Map<Integer, String> map = new HashMap<>();
         String path = "/bin/bash";
