@@ -11,10 +11,9 @@ public class User {
 
     @Id
     private Long id;
-
     private String login;
     private String name;
-
+    private String profileUrl;
     @Column(nullable=true)
     private String email;
 
@@ -23,5 +22,6 @@ public class User {
         this.login = memberInfoResponse.getLogin();
         this.name = memberInfoResponse.getUsername();
         this.email = memberInfoResponse.getEmail();
+        this.profileUrl = memberInfoResponse.getProfileUrl();
     }
 }
