@@ -20,6 +20,9 @@ public class MemberInfoResponse {
     @JsonProperty("email")
     private String email;
 
+    @JsonProperty("avatar_url")
+    private String profileUrl;
+
     public User changeDTOtoObj(MemberInfoResponse memberInfoResponse) {
         return new User(memberInfoResponse);
     }
