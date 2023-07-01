@@ -37,7 +37,7 @@ public class AccessTokenController {
     @GetMapping("/repository/list")
     public String getRepoList(){
         User user = userRepository.findByLogin("dlawjddn").get();
-        String check = oAuthService.getRepoURL(access_token, user).getBody();
+        String check = oAuthService.getRepoURL(user).getBody();
         return check;
     }
 }
