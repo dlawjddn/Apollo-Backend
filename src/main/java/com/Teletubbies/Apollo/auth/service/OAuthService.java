@@ -21,9 +21,9 @@ public class OAuthService {
     private static final String REPO_LIST_URL = "https://api.github.com/users";
     private static final RestTemplate restTemplate = new RestTemplate();
 
-    @Value("7600733c0c5ed7849ce6")
+    @Value("${security.oauth.github.client-id}")
     private String clientId;
-    @Value("49b1fc4106c9ec0c03875e4fb0279efd7703e0f4")
+    @Value("${security.oauth.github.client-secret}")
     private String clientSecret;
 
     public String getAccessToken(String code) {
@@ -45,9 +45,8 @@ public class OAuthService {
                 MemberInfoResponse.class
         );
     }
-    public ResponseEntity<String> getRepoURL(String accessToken, User user){
+    public ResponseEntity<String> getRepoURL(User user){
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
         HttpEntity<Void> request = new HttpEntity<>(headers);
         return restTemplate.exchange(
                 REPO_LIST_URL + "/" + user.getLogin() + "/repos",
