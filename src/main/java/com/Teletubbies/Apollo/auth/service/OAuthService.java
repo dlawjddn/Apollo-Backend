@@ -4,6 +4,7 @@ import com.Teletubbies.Apollo.auth.domain.User;
 import com.Teletubbies.Apollo.auth.dto.AccessTokenRequest;
 import com.Teletubbies.Apollo.auth.dto.AccessTokenResponse;
 import com.Teletubbies.Apollo.auth.dto.MemberInfoResponse;
+import com.Teletubbies.Apollo.auth.dto.RepoInfoResponse;
 import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -16,6 +17,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +54,8 @@ public class OAuthService {
                 MemberInfoResponse.class
         );
     }
-    public ResponseEntity<String> getRepoURL(User user) throws ParseException {
+    public List<RepoInfoResponse> getRepoURL(User user) throws ParseException {
+        // resource server에 레포 정보 http 요청
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<Void> request = new HttpEntity<>(headers);
         ResponseEntity<String> jsonData = restTemplate.exchange(
@@ -58,12 +64,19 @@ public class OAuthService {
                 request,
                 String.class
         );
+        // json 정보를 바탕으로 parsing
+        List<RepoInfoResponse> repoInfo = new ArrayList<>();
         JSONParser jsonParser = new JSONParser();
         JSONArray jsonArray = (JSONArray) jsonParser.parse(jsonData.getBody());
+
+        // json에서 추출한 정보를 바탕으로 dto list 생성
         for (int i=0; i< jsonArray.size(); i++){
             JSONObject jsonDataObject = (JSONObject) jsonArray.get(i);
-            System.out.println("name: "+jsonDataObject.get("name") + "    url: " +jsonDataObject.get("html_url"));
+            repoInfo.add(new RepoInfoResponse(
+                    jsonDataObject.get("name").toString(),
+                    jsonDataObject.get("html_url").toString())
+            );
         }
-        return jsonData;
+        return repoInfo;
     }
 }
