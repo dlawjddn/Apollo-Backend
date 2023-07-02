@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RepoInfoResponse {
+    private String userLogin;
     @JsonProperty("name")
     private String repoName;
     @JsonProperty("html_url")
