@@ -1,9 +1,12 @@
 package com.Teletubbies.Apollo.auth.domain;
 
 import com.Teletubbies.Apollo.auth.dto.MemberInfoResponse;
+import com.Teletubbies.Apollo.auth.dto.RepoInfoResponse;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Entity
 @NoArgsConstructor
@@ -18,6 +21,8 @@ public class User {
     private String profileUrl;
     @Column(nullable=true)
     private String email;
+    @OneToMany
+    private List<Repo> repos;
 
     public User (MemberInfoResponse memberInfoResponse) {
         this.id = memberInfoResponse.getOauthId();
@@ -25,5 +30,10 @@ public class User {
         this.name = memberInfoResponse.getUsername();
         this.email = memberInfoResponse.getEmail();
         this.profileUrl = memberInfoResponse.getProfileUrl();
+    }
+    public void addRepo(List<RepoInfoResponse> repoInfo){
+        for (RepoInfoResponse repoData : repoInfo) {
+            this.repos.add(repoData.changeDTOtoObj(repoData));
+        }
     }
 }
