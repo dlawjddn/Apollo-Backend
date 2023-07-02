@@ -62,7 +62,7 @@ public class OAuthService {
         JSONArray jsonArray = (JSONArray) jsonParser.parse(jsonData.getBody());
         for (int i=0; i< jsonArray.size(); i++){
             JSONObject jsonDataObject = (JSONObject) jsonArray.get(i);
-            System.out.println("full name : "+jsonDataObject.get("full_name") + "   clone url: " +jsonDataObject.get("clone_url"));
+            System.out.println("name: "+jsonDataObject.get("name") + "    url: " +jsonDataObject.get("html_url"));
         }
         return jsonData;
     }
