@@ -5,6 +5,8 @@ import com.Teletubbies.Apollo.auth.dto.MemberInfoResponse;
 import com.Teletubbies.Apollo.auth.repository.UserRepository;
 import com.Teletubbies.Apollo.auth.service.OAuthService;
 import com.Teletubbies.Apollo.auth.service.UserService;
+import org.hibernate.mapping.Map;
+import org.json.simple.parser.ParseException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,9 +37,9 @@ public class AccessTokenController {
         return ResponseEntity.ok("success");
     }
     @GetMapping("/repository/list")
-    public String getRepoList(){
+    public String getRepoList() throws ParseException {
         User user = userRepository.findByLogin("dlawjddn").get();
-        String check = oAuthService.getRepoURL(user).getBody();
-        return check;
+        ResponseEntity<String> repoURL = oAuthService.getRepoURL(user);
+        return "repo list success";
     }
 }

@@ -5,6 +5,10 @@ import com.Teletubbies.Apollo.auth.dto.AccessTokenRequest;
 import com.Teletubbies.Apollo.auth.dto.AccessTokenResponse;
 import com.Teletubbies.Apollo.auth.dto.MemberInfoResponse;
 import lombok.RequiredArgsConstructor;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -45,14 +49,21 @@ public class OAuthService {
                 MemberInfoResponse.class
         );
     }
-    public ResponseEntity<String> getRepoURL(User user){
+    public ResponseEntity<String> getRepoURL(User user) throws ParseException {
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<Void> request = new HttpEntity<>(headers);
-        return restTemplate.exchange(
+        ResponseEntity<String> jsonData = restTemplate.exchange(
                 REPO_LIST_URL + "/" + user.getLogin() + "/repos",
                 HttpMethod.GET,
                 request,
                 String.class
         );
+        JSONParser jsonParser = new JSONParser();
+        JSONArray jsonArray = (JSONArray) jsonParser.parse(jsonData.getBody());
+        for (int i=0; i< jsonArray.size(); i++){
+            JSONObject jsonDataObject = (JSONObject) jsonArray.get(i);
+            System.out.println("full name : "+jsonDataObject.get("full_name") + "   clone url: " +jsonDataObject.get("clone_url"));
+        }
+        return jsonData;
     }
 }
