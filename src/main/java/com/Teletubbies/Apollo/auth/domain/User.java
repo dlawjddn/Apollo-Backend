@@ -21,8 +21,6 @@ public class User {
     private String profileUrl;
     @Column(nullable=true)
     private String email;
-    @OneToMany
-    private List<Repo> repos;
 
     public User (MemberInfoResponse memberInfoResponse) {
         this.id = memberInfoResponse.getOauthId();
