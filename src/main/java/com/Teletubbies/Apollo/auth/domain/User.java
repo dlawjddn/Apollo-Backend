@@ -21,8 +21,6 @@ public class User {
     private String profileUrl;
     @Column(nullable=true)
     private String email;
-    @OneToMany
-    private List<Repo> repos;
 
     public User (MemberInfoResponse memberInfoResponse) {
         this.id = memberInfoResponse.getOauthId();
@@ -30,10 +28,5 @@ public class User {
         this.name = memberInfoResponse.getUsername();
         this.email = memberInfoResponse.getEmail();
         this.profileUrl = memberInfoResponse.getProfileUrl();
-    }
-    public void addRepo(List<RepoInfoResponse> repoInfo){
-        for (RepoInfoResponse repoData : repoInfo) {
-            this.repos.add(repoData.changeDTOtoObj(repoData));
-        }
     }
 }
