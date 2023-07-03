@@ -1,5 +1,6 @@
 package com.Teletubbies.Apollo.auth.service;
 
+import com.Teletubbies.Apollo.auth.domain.Repo;
 import com.Teletubbies.Apollo.auth.domain.User;
 import com.Teletubbies.Apollo.auth.dto.RepoInfoResponse;
 import com.Teletubbies.Apollo.auth.repository.RepoRepository;
@@ -54,5 +55,8 @@ public class RepoService {
         for (RepoInfoResponse response : repoInfos) {
             repoRepository.save(response.changeDTOtoObj(response));
         }
+    }
+    public List<Repo> findByLogin(User user){
+        return repoRepository.findByOwnerLogin(user.getLogin());
     }
 }
