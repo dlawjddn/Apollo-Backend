@@ -1,12 +1,10 @@
 package com.Teletubbies.Apollo.auth.domain;
 
 import com.Teletubbies.Apollo.auth.dto.MemberInfoResponse;
-import com.Teletubbies.Apollo.auth.dto.RepoInfoResponse;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
 
 @Entity
 @NoArgsConstructor
