@@ -31,9 +31,4 @@ public class User {
         this.email = memberInfoResponse.getEmail();
         this.profileUrl = memberInfoResponse.getProfileUrl();
     }
-    public void addRepo(List<RepoInfoResponse> repoInfo){
-        for (RepoInfoResponse repoData : repoInfo) {
-            this.repos.add(repoData.changeDTOtoObj(repoData));
-        }
-    }
 }
