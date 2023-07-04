@@ -2,8 +2,6 @@ package com.Teletubbies.Apollo.auth.controller;
 
 import com.Teletubbies.Apollo.auth.domain.Repo;
 import com.Teletubbies.Apollo.auth.domain.User;
-import com.Teletubbies.Apollo.auth.repository.RepoRepository;
-import com.Teletubbies.Apollo.auth.repository.UserRepository;
 import com.Teletubbies.Apollo.auth.service.RepoService;
 import com.Teletubbies.Apollo.auth.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -23,12 +21,22 @@ public class RepoController {
         repoService.saveRepo(findUser);
         return "repo list success";
     }
-    @GetMapping("/repository/list/find/login")
+    @GetMapping("/repository/find/login")
     public String findByLogin(){
         for (Repo repo : repoService.findByLogin(userService.getUserByLogin("dlawjddn"))) {
             System.out.println("repo name: " + repo.getRepoName());
             System.out.println("repo url:  " + repo.getRepoUrl());
         }
         return "success";
+    }
+    @GetMapping("/repository/find/name")
+    public String findByRepoName(){
+        Repo findRepo = repoService.findByName("algorithm");
+        return findRepo.getRepoUrl();
+    }
+    @GetMapping("/repository/find/url")
+    public String findByRepoUrl(){
+        Repo findRepo = repoService.findByRepoUrl("https://github.com/dlawjddn/refactoring-library-app");
+        return findRepo.getRepoName();
     }
 }

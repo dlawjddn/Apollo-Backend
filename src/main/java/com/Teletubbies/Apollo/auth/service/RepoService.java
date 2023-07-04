@@ -18,6 +18,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class RepoService {
@@ -58,5 +60,15 @@ public class RepoService {
     }
     public List<Repo> findByLogin(User user){
         return repoRepository.findByOwnerLogin(user.getLogin());
+    }
+    public Repo findByName(String repoName){
+        Optional<Repo> findRepo = repoRepository.findByRepoName(repoName);
+        if (findRepo != null && findRepo.isPresent()) return findRepo.get();
+        else throw new IllegalArgumentException("해당 레포지토리 이름을 가진 레포지토리를 찾을 수 없습니다.");
+    }
+    public Repo findByRepoUrl(String repoUrl){
+        Optional<Repo> findRepo = repoRepository.findByRepoUrl(repoUrl);
+        if (findRepo != null && findRepo.isPresent()) return findRepo.get();
+        else throw new IllegalArgumentException("해당 URL에 맞는 레포지토리는 존재하지 않습니다. ");
     }
 }
