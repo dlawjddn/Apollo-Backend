@@ -4,6 +4,8 @@ import com.Teletubbies.Apollo.auth.domain.Repo;
 import com.Teletubbies.Apollo.auth.domain.User;
 import com.Teletubbies.Apollo.auth.dto.RepoInfoResponse;
 import com.Teletubbies.Apollo.auth.repository.RepoRepository;
+import com.Teletubbies.Apollo.core.exception.ApolloException;
+import com.Teletubbies.Apollo.core.exception.CustomErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -64,11 +66,11 @@ public class RepoService {
     public Repo findByName(String repoName){
         Optional<Repo> findRepo = repoRepository.findByRepoName(repoName);
         if (findRepo != null && findRepo.isPresent()) return findRepo.get();
-        else throw new IllegalArgumentException("해당 레포지토리 이름을 가진 레포지토리를 찾을 수 없습니다.");
+        else throw new ApolloException(CustomErrorCode.NOT_FOUND_REPO_ERROR, "해당 이름에 맞는 레포지토리가 없습니다");
     }
     public Repo findByRepoUrl(String repoUrl){
         Optional<Repo> findRepo = repoRepository.findByRepoUrl(repoUrl);
         if (findRepo != null && findRepo.isPresent()) return findRepo.get();
-        else throw new IllegalArgumentException("해당 URL에 맞는 레포지토리는 존재하지 않습니다. ");
+        else throw new ApolloException(CustomErrorCode.NOT_FOUND_REPO_ERROR, "해당 URL에 맞는 레포지토리가 없습니다");
     }
 }

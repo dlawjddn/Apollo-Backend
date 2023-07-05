@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.INVALID_USER_ERROR;
+import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.NOT_FOUND_USER_ERROR;
 
 @Service
 @RequiredArgsConstructor
@@ -21,17 +21,17 @@ public class UserService {
     public User getUserById(Long id){
         Optional<User> optionalUser = userRepository.findById(id);
         if (optionalUser != null && optionalUser.isPresent()) return optionalUser.get();
-        else throw new ApolloException(INVALID_USER_ERROR, "존재하지 않는 회원입니다");
+        else throw new ApolloException(NOT_FOUND_USER_ERROR, "해당 ID에 맞는 회원이 없습니다");
     }
     public User getUserByLogin(String login){
         Optional<User> optionalUser = userRepository.findByLogin(login);
         if (optionalUser != null && optionalUser.isPresent()) return optionalUser.get();
-        else throw new ApolloException(INVALID_USER_ERROR, "존재하지 않는 회원입니다");
+        else throw new ApolloException(NOT_FOUND_USER_ERROR, "해당 loginID에 맞는 회원이 없습니다");
     }
     public User getUserByName(String name){
         Optional<User> optionalUser = userRepository.findByName(name);
         if (optionalUser != null && optionalUser.isPresent()) return optionalUser.get();
-        else throw new ApolloException(INVALID_USER_ERROR, "존재하지 않는 회원입니다");
+        else throw new ApolloException(NOT_FOUND_USER_ERROR, "해당 이름에 맞는 회원이 없습니다");
     }
 
 }
