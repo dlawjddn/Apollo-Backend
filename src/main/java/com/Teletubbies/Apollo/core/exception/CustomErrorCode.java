@@ -13,6 +13,8 @@ public enum CustomErrorCode {
     EMPTY_AUTHORIZATION_ERROR("0203", "인증 토큰이 존재하지 않습니다"),
     NOT_FOUND_USER_ERROR("404", "존재하지 않는 회원입니다"),
     NOT_FOUND_REPO_ERROR("404", "존재하지 않는 레포지토리입니다"),
+    DUPLICATED_USER_ERROR("409", "이미 존재하는 회원입니다"),
+    DUPLICATED_REPO_ERROR("409", "이미 존재하는 레포지토리입니다"),
     API_NOT_FOUND_ERROR("4300", "존재하지 않는 API입니다"),
 
     RUNTIME_ERROR("9902", "알 수 없는 예외가 발생했습니다"),

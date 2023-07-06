@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
+import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.DUPLICATED_USER_ERROR;
 import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.NOT_FOUND_USER_ERROR;
 
 @Service
@@ -19,6 +20,9 @@ public class UserService {
     private final UserRepository userRepository;
     @Transactional
     public void saveUser(MemberInfoResponse memberInfoResponse) {
+        User userToSave = memberInfoResponse.changeDTOtoObj(memberInfoResponse);
+        if (userRepository.existsById(userToSave.getId()))
+            throw new ApolloException(DUPLICATED_USER_ERROR, "이미 존재하는 회원입니다");
         userRepository.save(memberInfoResponse.changeDTOtoObj(memberInfoResponse));
     }
     public User getUserById(Long id){
