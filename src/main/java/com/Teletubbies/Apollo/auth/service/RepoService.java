@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.DUPLICATED_REPO_ERROR;
+
 @Service
 @RequiredArgsConstructor
 public class RepoService {
@@ -59,6 +61,7 @@ public class RepoService {
     public void saveRepo(User user) throws ParseException {
         List<RepoInfoResponse> repoInfos = getRepoURL(user);
         for (RepoInfoResponse response : repoInfos) {
+            if (repoRepository.findByOwnerLoginAndRepoName(response.getUserLogin(), response.getRepoName())) continue;
             repoRepository.save(response.changeDTOtoObj(response));
         }
     }
