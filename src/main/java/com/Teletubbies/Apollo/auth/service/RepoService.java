@@ -16,6 +16,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -54,20 +55,24 @@ public class RepoService {
         }
         return repoInfo;
     }
+    @Transactional
     public void saveRepo(User user) throws ParseException {
         List<RepoInfoResponse> repoInfos = getRepoURL(user);
         for (RepoInfoResponse response : repoInfos) {
             repoRepository.save(response.changeDTOtoObj(response));
         }
     }
+    @Transactional(readOnly = true)
     public List<Repo> findByLogin(User user){
         return repoRepository.findByOwnerLogin(user.getLogin());
     }
+    @Transactional(readOnly = true)
     public Repo findByName(String repoName){
         Optional<Repo> findRepo = repoRepository.findByRepoName(repoName);
         if (findRepo != null && findRepo.isPresent()) return findRepo.get();
         else throw new ApolloException(CustomErrorCode.NOT_FOUND_REPO_ERROR, "해당 이름에 맞는 레포지토리가 없습니다");
     }
+    @Transactional(readOnly = true)
     public Repo findByRepoUrl(String repoUrl){
         Optional<Repo> findRepo = repoRepository.findByRepoUrl(repoUrl);
         if (findRepo != null && findRepo.isPresent()) return findRepo.get();

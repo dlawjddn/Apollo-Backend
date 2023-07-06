@@ -6,6 +6,7 @@ import com.Teletubbies.Apollo.auth.repository.UserRepository;
 import com.Teletubbies.Apollo.core.exception.ApolloException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -13,8 +14,10 @@ import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.NOT_FOUND_US
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService {
     private final UserRepository userRepository;
+    @Transactional
     public void saveUser(MemberInfoResponse memberInfoResponse) {
         userRepository.save(memberInfoResponse.changeDTOtoObj(memberInfoResponse));
     }
