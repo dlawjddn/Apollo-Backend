@@ -65,7 +65,7 @@ public class RepoService {
         List<RepoInfoResponse> repoInfos = getRepoURL(user);
         log.info("get repo list ok");
         for (RepoInfoResponse response : repoInfos) {
-            if (repoRepository.existsByOwnerLoginAndRepoName(response.getUserLogin(), response.getRepoName())) continue;
+            if (repoRepository.existsById(response.getId())) continue;
             repoRepository.save(response.changeDTOtoObj(response));
         }
     }
