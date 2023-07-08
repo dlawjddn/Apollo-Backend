@@ -19,7 +19,7 @@ public class RepoController {
 
     @GetMapping("/repository/list")
     public String saveRepoList() throws ParseException {
-        User findUser = userService.getUserByName("임정우");
+        User findUser = userService.getUserByLogin("dlawjddn");
         repoService.saveRepo(findUser);
         return "repo list success";
     }

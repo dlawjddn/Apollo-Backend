@@ -7,6 +7,7 @@ import com.Teletubbies.Apollo.auth.repository.RepoRepository;
 import com.Teletubbies.Apollo.core.exception.ApolloException;
 import com.Teletubbies.Apollo.core.exception.CustomErrorCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -26,6 +27,7 @@ import java.util.Optional;
 import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.DUPLICATED_REPO_ERROR;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class RepoService {
     private final RepoRepository repoRepository;
@@ -60,8 +62,9 @@ public class RepoService {
     @Transactional
     public void saveRepo(User user) throws ParseException {
         List<RepoInfoResponse> repoInfos = getRepoURL(user);
+        log.info("get repo list ok");
         for (RepoInfoResponse response : repoInfos) {
-            if (repoRepository.findByOwnerLoginAndRepoName(response.getUserLogin(), response.getRepoName())) continue;
+            if (repoRepository.existsByOwnerLoginAndRepoName(response.getUserLogin(), response.getRepoName())) continue;
             repoRepository.save(response.changeDTOtoObj(response));
         }
     }
