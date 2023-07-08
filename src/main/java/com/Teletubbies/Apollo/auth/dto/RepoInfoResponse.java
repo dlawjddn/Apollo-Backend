@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RepoInfoResponse {
     private String userLogin;
+    @JsonProperty("id")
+    private Long id;
     @JsonProperty("name")
     private String repoName;
     @JsonProperty("html_url")

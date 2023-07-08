@@ -10,12 +10,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Repo {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String repoName;
     private String repoUrl;
     private String ownerLogin;
     public Repo(RepoInfoResponse response){
+        this.id = response.getId();
         this.ownerLogin = response.getUserLogin();
         this.repoName = response.getRepoName();
         this.repoUrl = response.getRepoURL();

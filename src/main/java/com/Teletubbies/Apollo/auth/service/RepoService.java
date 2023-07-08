@@ -53,6 +53,7 @@ public class RepoService {
             JSONObject jsonDataObject = (JSONObject) jsonArray.get(i);
             repoInfo.add(new RepoInfoResponse(
                     user.getLogin(),
+                    (Long) jsonDataObject.get("id"),
                     jsonDataObject.get("name").toString(),
                     jsonDataObject.get("html_url").toString())
             );
