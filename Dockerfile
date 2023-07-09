@@ -1,8 +1,3 @@
-# FROM openjdk:17-jdk-alpine AS build
-# ARG JAR_FILE=build/libs/*.jar
-# COPY ${JAR_FILE} app.jar
-# ENTRYPOINT ["java","-jar","/app.jar"]
-
 FROM gradle:8.0.2-jdk17 AS mbuilder
 COPY . /usr/src
 WORKDIR /usr/src/
