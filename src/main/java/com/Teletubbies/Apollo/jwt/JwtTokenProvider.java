@@ -37,11 +37,10 @@ public class JwtTokenProvider {
         //지금 시간 가져오기
         Long timeNow = new Date().getTime();
 
-        Date accessTokenExpiresIn = new Date(timeNow + 86400000);
         String accessToken = Jwts.builder()
                 .setSubject(authentication.getName())
                 .claim("auth", authorities)
-                .setExpiration(accessTokenExpiresIn)
+                .setExpiration(new Date(timeNow + 86400000))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
