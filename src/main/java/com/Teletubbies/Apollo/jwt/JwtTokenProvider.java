@@ -23,6 +23,10 @@ import java.util.stream.Collectors;
 @Component
 public class JwtTokenProvider {
     private final Key key;
+    @Value("${jwt.access-token.expiration}")
+    private Long accessTokenAlive;
+    @Value("${jwt.refresh-token.expiration}")
+    private Long refreshTokenAlive;
     public JwtTokenProvider(@Value("${jwt.secret}") String secretKey){
         byte[] keyBytes = Base64.getDecoder().decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
@@ -37,19 +41,16 @@ public class JwtTokenProvider {
         //지금 시간 가져오기
         Long timeNow = new Date().getTime();
 
-        Long oneDay = 86400000L; // 하루 86400초 * 밀리
-        Long oneWeek = 7 * 86400000L; // 7일 * 하루 86400초 * 밀리
-
         String accessToken = Jwts.builder()
                 .setSubject(authentication.getName())
                 .claim("auth", authorities)
-                .setExpiration(new Date(timeNow + oneDay))
+                .setExpiration(new Date(timeNow + accessTokenAlive))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
         // Refresh Token 생성
         String refreshToken = Jwts.builder()
-                .setExpiration(new Date(timeNow + oneWeek))
+                .setExpiration(new Date(timeNow + refreshTokenAlive))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
