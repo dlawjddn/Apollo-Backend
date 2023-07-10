@@ -37,16 +37,19 @@ public class JwtTokenProvider {
         //지금 시간 가져오기
         Long timeNow = new Date().getTime();
 
+        Long oneDay = 86400000L; // 하루 86400초 * 밀리
+        Long oneWeek = 7 * 86400000L; // 7일 * 하루 86400초 * 밀리
+
         String accessToken = Jwts.builder()
                 .setSubject(authentication.getName())
                 .claim("auth", authorities)
-                .setExpiration(new Date(timeNow + 86400000))
+                .setExpiration(new Date(timeNow + oneDay))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
         // Refresh Token 생성
         String refreshToken = Jwts.builder()
-                .setExpiration(new Date(timeNow + 86400000))
+                .setExpiration(new Date(timeNow + oneWeek))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
