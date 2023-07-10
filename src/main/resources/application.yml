@@ -27,6 +27,9 @@ security:
     github:
       client-id: ${GITHUB_CLIENT_ID}
       client-secret: ${GITHUB_CLIENT_SECRET}
-  jwt:
-    secret: ${JWT_SECRET}
-    expiration: ${JWT_EXPIRATION}
+jwt:
+  secret: ${JWT_SECRET}
+  access-token:
+    expiration: ${TOKEN_EXPIRATION}
+  refresh-token:
+    expiration: ${REFRESH_EXPIRATION}
