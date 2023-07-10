@@ -20,13 +20,13 @@ public class RepoController {
     private final UserService userService;
     private final RepoService repoService;
 
-    @GetMapping("/repository/list/{userlogin}")
+    @GetMapping("/repository/list/{userLogin}")
     public String saveRepoList(@PathVariable String userLogin) throws ParseException {
         User findUser = userService.getUserByLogin(userLogin);
         repoService.saveRepo(findUser);
         return "repo list success";
     }
-    @GetMapping("/repository/find/{userlogin}")
+    @GetMapping("/repository/find/login/{userLogin}")
     public String findByLogin(@PathVariable String userLogin){
         for (Repo repo : repoService.findByLogin(userService.getUserByLogin(userLogin))) {
             System.out.println("repo name: " + repo.getRepoName());
@@ -34,12 +34,12 @@ public class RepoController {
         }
         return "repo find by login success";
     }
-    @GetMapping("/repository/find/{reponame}")
+    @GetMapping("/repository/find/name/{repoName}")
     public String findByRepoName(@PathVariable String repoName){
         Repo findRepo = repoService.findByName(repoName);
         return "repo find by repo name success, repo name: " + findRepo.getRepoName();
     }
-    @GetMapping("/repository/find/repourl")
+    @GetMapping("/repository/find/url/repoUrl")
     public String findByRepoUrl(@PathVariable String repoUrl){
         // "https://github.com/dlawjddn/refactoring-library-app"
         Repo findRepo = repoService.findByRepoUrl(repoUrl);
