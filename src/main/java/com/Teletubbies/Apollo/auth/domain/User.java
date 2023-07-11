@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @Table(name="user")
 @Getter
-public class User implements UserDetails {
+public class User{
 
     @Id
     private Long id;
@@ -28,9 +28,6 @@ public class User implements UserDetails {
     private String profileUrl;
     @Column(nullable=true)
     private String email; // userPassword에 해당하는 부분
-    @ElementCollection(fetch = FetchType.EAGER)
-    @Builder.Default
-    private List<String> roles = new ArrayList<>();
 
     public User (MemberInfoResponse memberInfoResponse) {
         this.id = memberInfoResponse.getOauthId();
@@ -40,39 +37,5 @@ public class User implements UserDetails {
         this.profileUrl = memberInfoResponse.getProfileUrl();
     }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.roles.stream()
-                .map(SimpleGrantedAuthority::new).collect(Collectors.toList());
-    }
 
-    @Override
-    public String getPassword() {
-        return this.email;
-    }
-
-    @Override
-    public String getUsername() {
-        return this.login;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
 }
