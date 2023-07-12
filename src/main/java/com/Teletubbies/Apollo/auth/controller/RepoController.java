@@ -39,7 +39,7 @@ public class RepoController {
         Repo findRepo = repoService.findByName(repoName);
         return "repo find by repo name success, repo name: " + findRepo.getRepoName();
     }
-    @GetMapping("/repository/find/url/repoUrl")
+    @GetMapping("/repository/find/url/{repoUrl}")
     public String findByRepoUrl(@PathVariable String repoUrl){
         // "https://github.com/dlawjddn/refactoring-library-app"
         Repo findRepo = repoService.findByRepoUrl(repoUrl);
