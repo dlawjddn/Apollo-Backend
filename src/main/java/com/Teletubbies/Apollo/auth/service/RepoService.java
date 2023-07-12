@@ -31,8 +31,8 @@ import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.DUPLICATED_R
 @RequiredArgsConstructor
 public class RepoService {
     private final RepoRepository repoRepository;
-    private static String REPO_LIST_URL = "https://api.github.com/users";
-    private static RestTemplate restTemplate = new RestTemplate();
+    private final static String REPO_LIST_URL = "https://api.github.com/users";
+    private final static RestTemplate restTemplate = new RestTemplate();
     public List<RepoInfoResponse> getRepoURL(User user) throws ParseException {
         // resource server에 레포 정보 http 요청
         HttpHeaders headers = new HttpHeaders();

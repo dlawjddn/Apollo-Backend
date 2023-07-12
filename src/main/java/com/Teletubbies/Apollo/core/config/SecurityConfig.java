@@ -32,14 +32,15 @@ public class SecurityConfig {
         http
                 // csrf disable
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors((cors) -> configurationSource())
+//                .cors((cors) -> configurationSource()) // cors 허용 적용
+                .cors(cors -> cors.configurationSource(configurationSource()))
                 // session 사용하지 않을 듯!
                 .sessionManagement((sessionManagement) ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 //form login 사용하지 않겠다.
-                .formLogin((formLogin) -> formLogin.disable())
-                .httpBasic((httpBasic) -> httpBasic.disable())
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
                 //모든 http 요청에 대한 허용
                 .authorizeHttpRequests((authorizeRequests) ->
                         authorizeRequests.anyRequest().permitAll())
