@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 public class AccessTokenController {
     private final OAuthService oAuthService;
     private final UserService userService;
-    @GetMapping("/authenticate")
+    @PostMapping("/authenticate")
     public ResponseEntity<String> getUserInfo(@RequestParam String code) {
         String accessToken = oAuthService.getAccessToken(code);
         MemberInfoResponse memberInfoResponse = oAuthService.getUserInfo(accessToken).getBody();

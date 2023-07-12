@@ -36,7 +36,9 @@ public class OAuthService {
 
     public ResponseEntity<MemberInfoResponse> getUserInfo(String accessToken) {
         HttpHeaders headers = new HttpHeaders();
+        headers.add("Accept", "application/vnd.github+json");
         headers.setBearerAuth(accessToken);
+        headers.add("X-Github-Api-Version", "2022-11-28");
         HttpEntity<Void> request = new HttpEntity<>(headers);
         return restTemplate.exchange(
                 MEMBER_INFO_URL,
