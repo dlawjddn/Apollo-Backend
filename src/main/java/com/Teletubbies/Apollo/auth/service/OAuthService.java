@@ -4,16 +4,18 @@ import com.Teletubbies.Apollo.auth.dto.AccessTokenRequest;
 import com.Teletubbies.Apollo.auth.dto.AccessTokenResponse;
 import com.Teletubbies.Apollo.auth.dto.MemberInfoResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OAuthService {
@@ -27,6 +29,7 @@ public class OAuthService {
     private String clientSecret;
 
     public String getAccessToken(String code) {
+        log.info("code -> access-token 함수 진입 성공");
         return restTemplate.postForObject(
                 ACCESS_TOKEN_URL,
                 new AccessTokenRequest(clientId, clientSecret, code),
@@ -40,6 +43,7 @@ public class OAuthService {
         headers.setBearerAuth(accessToken);
         headers.add("X-Github-Api-Version", "2022-11-28");
         HttpEntity<Void> request = new HttpEntity<>(headers);
+        log.info("request 생성 완료");
         return restTemplate.exchange(
                 MEMBER_INFO_URL,
                 HttpMethod.GET,
