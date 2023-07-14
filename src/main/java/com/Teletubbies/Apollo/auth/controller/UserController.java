@@ -1,18 +1,23 @@
 package com.Teletubbies.Apollo.auth.controller;
 
 import com.Teletubbies.Apollo.auth.domain.User;
+import com.Teletubbies.Apollo.auth.dto.MemberInfoResponse;
 import com.Teletubbies.Apollo.auth.service.UserService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
+@Slf4j
 @RestController
 @RequestMapping("/api")
 public class UserController {
     private final UserService userService;
     public UserController(UserService userService){
         this.userService = userService;
+    }
+    @PostMapping("save/user")
+    public String saveUser(@RequestBody MemberInfoResponse memberInfoResponse){
+        Long savedUserId = userService.saveUser(memberInfoResponse);
+        log.info("유저 저장 완료");
+        return savedUserId.toString();
     }
     @GetMapping("/login/find/{userId}")
     public String findUserById(@PathVariable Long userId){
