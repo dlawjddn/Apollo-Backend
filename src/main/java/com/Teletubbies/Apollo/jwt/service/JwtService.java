@@ -1,29 +1,24 @@
-package com.Teletubbies.Apollo.jwt.test.service;
+package com.Teletubbies.Apollo.jwt.service;
 
 import com.Teletubbies.Apollo.jwt.JwtTokenProvider;
 import com.Teletubbies.Apollo.jwt.dto.TokenInfo;
-import com.Teletubbies.Apollo.jwt.test.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.xml.SimpleTransformErrorListener;
 
-@Service
 @Slf4j
-@Transactional(readOnly = true)
+@Service
 @RequiredArgsConstructor
-public class MemberService {
-    private final MemberRepository memberRepository;
+public class JwtService {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
-    public TokenInfo login(String memberId, String password){
+    public TokenInfo login(String userLogin, String userId){
         // 1. Login ID/PW 를 기반으로 Authentication 객체 생성
         // 이때 authentication 는 인증 여부를 확인하는 authenticated 값이 false
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(memberId, password);
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userLogin, userId);
         log.info("authenticationtoken name: " + authenticationToken.getName());
         log.info("authenticationtoken principal: " +authenticationToken.getPrincipal().toString());
         log.info("authenticationtoken credentials " +authenticationToken.getCredentials().toString());
