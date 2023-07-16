@@ -1,10 +1,15 @@
 package com.Teletubbies.Apollo.auth.service;
 
-import com.Teletubbies.Apollo.auth.domain.User;
+import com.Teletubbies.Apollo.auth.domain.ApolloUser;
 import com.Teletubbies.Apollo.auth.dto.MemberInfoResponse;
 import com.Teletubbies.Apollo.auth.repository.UserRepository;
 import com.Teletubbies.Apollo.core.exception.ApolloException;
+import com.Teletubbies.Apollo.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,32 +17,48 @@ import java.util.Optional;
 
 import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.DUPLICATED_USER_ERROR;
 import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.NOT_FOUND_USER_ERROR;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class UserService {
     private final UserRepository userRepository;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
     @Transactional
     public Long saveUser(MemberInfoResponse memberInfoResponse) {
-        User userToSave = memberInfoResponse.changeDTOtoObj(memberInfoResponse);
-        if (userRepository.existsById(userToSave.getId()))
+        ApolloUser apolloUserToSave = memberInfoResponse.changeDTOtoObj(memberInfoResponse);
+        if (userRepository.existsById(apolloUserToSave.getId()))
             throw new ApolloException(DUPLICATED_USER_ERROR, "이미 존재하는 회원입니다");
-        User savedUser = userRepository.save(memberInfoResponse.changeDTOtoObj(memberInfoResponse));
-        return savedUser.getId();
+        ApolloUser savedApolloUser = userRepository.save(memberInfoResponse.changeDTOtoObj(memberInfoResponse));
+        return savedApolloUser.getId();
     }
-    public User getUserById(Long id){
-        Optional<User> optionalUser = userRepository.findById(id);
+    public String login(String userLogin, String userId){
+        // 1. github login(ID) / git user id(PW) 를 기반으로 Authentication 객체 생성
+        // 이때 authentication 는 인증 여부를 확인하는 authenticated 값이 false
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userLogin, userId);
+        log.info("authenticationtoken name: " + authenticationToken.getName());
+        log.info("authenticationtoken principal: " +authenticationToken.getPrincipal().toString());
+        log.info("authenticationtoken credentials " +authenticationToken.getCredentials().toString());
+
+        // 2. 실제 검증 (사용자 비밀번호 체크)이 이루어지는 부분
+        // authenticate 매서드가 실행될 때 CustomUserDetailsService 에서 만든 loadUserByUsername 메서드가 실행
+        //Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        //log.info("실제 검증 완료");
+        return "ok";
+    }
+    public ApolloUser getUserById(Long id){
+        Optional<ApolloUser> optionalUser = userRepository.findById(id);
         if (optionalUser != null && optionalUser.isPresent()) return optionalUser.get();
         else throw new ApolloException(NOT_FOUND_USER_ERROR, "해당 ID에 맞는 회원이 없습니다");
     }
-    public User getUserByLogin(String login){
-        Optional<User> optionalUser = userRepository.findByLogin(login);
+    public ApolloUser getUserByLogin(String login){
+        Optional<ApolloUser> optionalUser = userRepository.findByLogin(login);
         if (optionalUser != null && optionalUser.isPresent()) return optionalUser.get();
         else throw new ApolloException(NOT_FOUND_USER_ERROR, "해당 loginID에 맞는 회원이 없습니다");
     }
-    public User getUserByName(String name){
-        Optional<User> optionalUser = userRepository.findByName(name);
+    public ApolloUser getUserByName(String name){
+        Optional<ApolloUser> optionalUser = userRepository.findByName(name);
         if (optionalUser != null && optionalUser.isPresent()) return optionalUser.get();
         else throw new ApolloException(NOT_FOUND_USER_ERROR, "해당 이름에 맞는 회원이 없습니다");
     }

@@ -1,7 +1,7 @@
 package com.Teletubbies.Apollo.auth.controller;
 
+import com.Teletubbies.Apollo.auth.domain.ApolloUser;
 import com.Teletubbies.Apollo.auth.domain.Repo;
-import com.Teletubbies.Apollo.auth.domain.User;
 import com.Teletubbies.Apollo.auth.service.RepoService;
 import com.Teletubbies.Apollo.auth.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +22,8 @@ public class RepoController {
 
     @GetMapping("/repository/list/{userLogin}")
     public String saveRepoList(@PathVariable String userLogin) throws ParseException {
-        User findUser = userService.getUserByLogin(userLogin);
-        repoService.saveRepo(findUser);
+        ApolloUser findApolloUser = userService.getUserByLogin(userLogin);
+        repoService.saveRepo(findApolloUser);
         return "repo list success";
     }
     @GetMapping("/repository/find/login/{userLogin}")
