@@ -1,7 +1,7 @@
 package com.Teletubbies.Apollo.auth.service;
 
+import com.Teletubbies.Apollo.auth.domain.ApolloUser;
 import com.Teletubbies.Apollo.auth.domain.Repo;
-import com.Teletubbies.Apollo.auth.domain.User;
 import com.Teletubbies.Apollo.auth.dto.RepoInfoResponse;
 import com.Teletubbies.Apollo.auth.repository.RepoRepository;
 import com.Teletubbies.Apollo.core.exception.ApolloException;
@@ -24,8 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.DUPLICATED_REPO_ERROR;
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -33,12 +31,12 @@ public class RepoService {
     private final RepoRepository repoRepository;
     private final static String REPO_LIST_URL = "https://api.github.com/users";
     private final static RestTemplate restTemplate = new RestTemplate();
-    public List<RepoInfoResponse> getRepoURL(User user) throws ParseException {
+    public List<RepoInfoResponse> getRepoURL(ApolloUser apolloUser) throws ParseException {
         // resource server에 레포 정보 http 요청
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<Void> request = new HttpEntity<>(headers);
         ResponseEntity<String> jsonData = restTemplate.exchange(
-                REPO_LIST_URL + "/" + user.getLogin() + "/repos",
+                REPO_LIST_URL + "/" + apolloUser.getLogin() + "/repos",
                 HttpMethod.GET,
                 request,
                 String.class
@@ -52,7 +50,7 @@ public class RepoService {
         for (int i=0; i< jsonArray.size(); i++){
             JSONObject jsonDataObject = (JSONObject) jsonArray.get(i);
             repoInfo.add(new RepoInfoResponse(
-                    user.getLogin(),
+                    apolloUser.getLogin(),
                     (Long) jsonDataObject.get("id"),
                     jsonDataObject.get("name").toString(),
                     jsonDataObject.get("html_url").toString())
@@ -61,8 +59,8 @@ public class RepoService {
         return repoInfo;
     }
     @Transactional
-    public void saveRepo(User user) throws ParseException {
-        List<RepoInfoResponse> repoInfos = getRepoURL(user);
+    public void saveRepo(ApolloUser apolloUser) throws ParseException {
+        List<RepoInfoResponse> repoInfos = getRepoURL(apolloUser);
         log.info("get repo list ok");
         for (RepoInfoResponse response : repoInfos) {
             if (repoRepository.existsById(response.getId())) continue;
@@ -70,8 +68,8 @@ public class RepoService {
         }
     }
     @Transactional(readOnly = true)
-    public List<Repo> findByLogin(User user){
-        return repoRepository.findByOwnerLogin(user.getLogin());
+    public List<Repo> findByLogin(ApolloUser apolloUser){
+        return repoRepository.findByOwnerLogin(apolloUser.getLogin());
     }
     @Transactional(readOnly = true)
     public Repo findByName(String repoName){
