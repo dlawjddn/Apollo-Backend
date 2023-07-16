@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.beans.ConstructorProperties;
+
 @Getter
 @NoArgsConstructor
 public class MemberInfoResponse {
