@@ -1,4 +1,4 @@
-package com.Teletubbies.Apollo.jwt.test.domain;
+package com.Teletubbies.Apollo.jwt.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -19,12 +19,13 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class Member implements UserDetails {
+public class ApolloUserToken implements UserDetails {
     @Id
     @Column(updatable = false, unique = true, nullable = false)
-    private String memberId;
+    private String userLogin;
     @Column(nullable = false)
-    private String password;
+    private String userId;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @Builder.Default
     private List<String> roles = new ArrayList<>();
@@ -38,12 +39,12 @@ public class Member implements UserDetails {
 
     @Override
     public String getPassword() {
-        return this.password;
+        return this.userId;
     }
 
     @Override
     public String getUsername() {
-        return this.memberId;
+        return this.userLogin;
     }
 
     @Override

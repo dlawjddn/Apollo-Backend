@@ -1,7 +1,7 @@
 package com.Teletubbies.Apollo.jwt.service;
 
-import com.Teletubbies.Apollo.auth.domain.ApolloUser;
-import com.Teletubbies.Apollo.auth.repository.UserRepository;
+import com.Teletubbies.Apollo.jwt.domain.ApolloUserToken;
+import com.Teletubbies.Apollo.jwt.repository.ApolloUserTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.User;
@@ -17,21 +17,21 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class ApolloUserDetailsService implements UserDetailsService {
-    private final UserRepository userRepository;
+    private final ApolloUserTokenRepository apolloUserTokenRepository;
     private final PasswordEncoder passwordEncoder;
     @Override
     public UserDetails loadUserByUsername(String userLogin) throws UsernameNotFoundException {
         log.info("ApolloUserDeatailService 진입 성공");
-        Optional<ApolloUser> findUser = userRepository.findByLogin(userLogin);
-        log.info("find-user login: ", findUser.get().getLogin());
-        return userRepository.findByLogin(userLogin)
+        Optional<ApolloUserToken> findUser = apolloUserTokenRepository.findByUserLogin(userLogin);
+        log.info("find-user login: ", findUser.get().getUserLogin());
+        return apolloUserTokenRepository.findByUserLogin(userLogin)
                 .map(this::createUserDetail)
                 .orElseThrow();
     }
-    public UserDetails createUserDetail(ApolloUser apolloUser){
+    public UserDetails createUserDetail(ApolloUserToken apolloUserToken){
         return User.builder()
-                .username(apolloUser.getUsername())
-                .password(passwordEncoder.encode(apolloUser.getPassword()))
+                .username(apolloUserToken.getUsername())
+                .password(passwordEncoder.encode(apolloUserToken.getPassword()))
                 .build();
     }
 }
