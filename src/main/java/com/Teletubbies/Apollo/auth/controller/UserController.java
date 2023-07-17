@@ -3,6 +3,9 @@ package com.Teletubbies.Apollo.auth.controller;
 import com.Teletubbies.Apollo.auth.domain.ApolloUser;
 import com.Teletubbies.Apollo.auth.dto.MemberInfoResponse;
 import com.Teletubbies.Apollo.auth.service.UserService;
+import com.Teletubbies.Apollo.jwt.repository.ApolloUserTokenRepository;
+import com.Teletubbies.Apollo.jwt.service.JwtService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 @Slf4j
@@ -10,14 +13,18 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api")
 public class UserController {
     private final UserService userService;
-    public UserController(UserService userService){
+    private final JwtService jwtService;
+    public UserController(UserService userService, JwtService jwtService){
         this.userService = userService;
+        this.jwtService = jwtService;
     }
     @PostMapping("/save/user")
     public String saveUser(@RequestBody MemberInfoResponse memberInfoResponse){
-        Long savedUserId = userService.saveUser(memberInfoResponse);
+        ApolloUser savedUser = userService.saveUser(memberInfoResponse);
         log.info("유저 저장 완료");
-        return savedUserId.toString();
+        jwtService.saveToken(savedUser.getLogin(), savedUser.getId().toString());
+        log.info("Token 기초 정보 저장 완료");
+        return "ok";
     }
     @GetMapping("/login/find/{userId}")
     public String findUserById(@PathVariable Long userId){

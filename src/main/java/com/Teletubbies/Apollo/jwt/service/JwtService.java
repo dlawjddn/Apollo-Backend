@@ -1,7 +1,10 @@
 package com.Teletubbies.Apollo.jwt.service;
 
+import com.Teletubbies.Apollo.auth.domain.ApolloUser;
 import com.Teletubbies.Apollo.jwt.JwtTokenProvider;
+import com.Teletubbies.Apollo.jwt.domain.ApolloUserToken;
 import com.Teletubbies.Apollo.jwt.dto.TokenInfo;
+import com.Teletubbies.Apollo.jwt.repository.ApolloUserTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,8 +16,12 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class JwtService {
+    private final ApolloUserTokenRepository apolloUserTokenRepository;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
+    public void saveToken(String userLogin, String userId){
+        apolloUserTokenRepository.save(new ApolloUserToken(userLogin, userId));
+    }
     public TokenInfo login(String userLogin, String userId){
         // 1. Login ID/PW 를 기반으로 Authentication 객체 생성
         // 이때 authentication 는 인증 여부를 확인하는 authenticated 값이 false
@@ -27,7 +34,7 @@ public class JwtService {
         // getDetail = null, getAuthentirities = 없음
 
         // 2. 실제 검증 (사용자 비밀번호 체크)이 이루어지는 부분
-        // authenticate 매서드가 실행될 때 CustomUserDetailsService 에서 만든 loadUserByUsername 메서드가 실행
+        // authenticate 매서드가 실행될 때 ApolloUserDetailsService 에서 만든 loadUserByUsername 메서드가 실행
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         log.info("실제 검증 성공");
 

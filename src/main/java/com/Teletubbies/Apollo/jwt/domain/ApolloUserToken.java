@@ -29,6 +29,10 @@ public class ApolloUserToken implements UserDetails {
     @ElementCollection(fetch = FetchType.EAGER)
     @Builder.Default
     private List<String> roles = new ArrayList<>();
+    public ApolloUserToken(String userLogin, String userId){
+        this.userLogin = userLogin;
+        this.userId = userId;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

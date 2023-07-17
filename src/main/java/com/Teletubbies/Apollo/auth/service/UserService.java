@@ -20,12 +20,12 @@ import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.NOT_FOUND_US
 public class UserService {
     private final UserRepository userRepository;
     @Transactional
-    public Long saveUser(MemberInfoResponse memberInfoResponse) {
+    public ApolloUser saveUser(MemberInfoResponse memberInfoResponse) {
         ApolloUser apolloUserToSave = memberInfoResponse.changeDTOtoObj(memberInfoResponse);
         if (userRepository.existsById(apolloUserToSave.getId()))
             throw new ApolloException(DUPLICATED_USER_ERROR, "이미 존재하는 회원입니다");
         ApolloUser savedApolloUser = userRepository.save(memberInfoResponse.changeDTOtoObj(memberInfoResponse));
-        return savedApolloUser.getId();
+        return savedApolloUser;
     }
     public ApolloUser getUserById(Long id){
         Optional<ApolloUser> optionalUser = userRepository.findById(id);
