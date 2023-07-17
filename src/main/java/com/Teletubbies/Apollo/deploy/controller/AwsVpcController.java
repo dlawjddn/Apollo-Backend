@@ -1,17 +1,15 @@
 package com.Teletubbies.Apollo.deploy.controller;
 
 import com.Teletubbies.Apollo.deploy.service.AwsVpcService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class AwsVpcController {
     private final AwsVpcService awsVpcService;
-
-    public AwsVpcController(AwsVpcService awsVpcService) {
-        this.awsVpcService = awsVpcService;
-    }
 
     @PostMapping("/vpc")
     public ResponseEntity<String> createVpc() {

@@ -1,13 +1,9 @@
 package com.Teletubbies.Apollo.deploy.service;
 
-import com.Teletubbies.Apollo.deploy.dto.AwsServiceDto;
-import jakarta.annotation.PostConstruct;
+import com.Teletubbies.Apollo.deploy.component.AwsClientComponent;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.CreateVpcRequest;
 import software.amazon.awssdk.services.ec2.model.CreateVpcResponse;
@@ -15,22 +11,18 @@ import software.amazon.awssdk.services.ec2.model.DeleteVpcRequest;
 import software.amazon.awssdk.services.ec2.model.DeleteVpcResponse;
 
 @Service
+@Slf4j
 public class AwsVpcService {
 
-    private final AwsServiceDto awsServiceDto;
+    private final AwsClientComponent awsClientComponent;
 
     @Autowired
-    public AwsVpcService(AwsServiceDto awsServiceDto) {
-        this.awsServiceDto = awsServiceDto;
+    public AwsVpcService(AwsClientComponent awsClientComponent) {
+        this.awsClientComponent = awsClientComponent;
     }
 
     public Ec2Client createEc2Client() {
-        AwsBasicCredentials awsCreds = AwsBasicCredentials.create(awsServiceDto.getAccessKey(), awsServiceDto.getSecretKey());
-
-        return Ec2Client.builder()
-                .region(Region.AP_NORTHEAST_2)
-                .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
-                .build();
+        return awsClientComponent.createEc2Client();
     }
 
     public String createVpc() {
@@ -42,7 +34,7 @@ public class AwsVpcService {
                 .build();
 
         CreateVpcResponse response = ec2.createVpc(request);
-
+        log.info("Create VPC ID: " + response.vpc().vpcId());
         return response.vpc().vpcId();
     }
 
@@ -52,7 +44,7 @@ public class AwsVpcService {
         DeleteVpcRequest request = DeleteVpcRequest.builder()
                 .vpcId(vpcId)
                 .build();
-
+        log.info("Delete VPC ID: " + vpcId);
         DeleteVpcResponse response = ec2.deleteVpc(request);
     }
 }

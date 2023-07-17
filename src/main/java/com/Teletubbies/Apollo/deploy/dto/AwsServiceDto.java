@@ -17,4 +17,7 @@ public class AwsServiceDto {
 
     @Value("${cloud.aws.credentials.secret-key}")
     private String secretKey;
+
+    @Value("${cloud.aws.region}")
+    private String region;
 }
