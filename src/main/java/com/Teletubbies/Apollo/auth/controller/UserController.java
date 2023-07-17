@@ -3,9 +3,7 @@ package com.Teletubbies.Apollo.auth.controller;
 import com.Teletubbies.Apollo.auth.domain.ApolloUser;
 import com.Teletubbies.Apollo.auth.dto.MemberInfoResponse;
 import com.Teletubbies.Apollo.auth.service.UserService;
-import com.Teletubbies.Apollo.jwt.repository.ApolloUserTokenRepository;
 import com.Teletubbies.Apollo.jwt.service.JwtService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 @Slf4j
@@ -22,7 +20,7 @@ public class UserController {
     public String saveUser(@RequestBody MemberInfoResponse memberInfoResponse){
         ApolloUser savedUser = userService.saveUser(memberInfoResponse);
         log.info("유저 저장 완료");
-        jwtService.saveToken(savedUser.getLogin(), savedUser.getId().toString());
+        jwtService.toMakeTokenSaveObj(savedUser.getLogin(), savedUser.getId().toString());
         log.info("Token 기초 정보 저장 완료");
         return "ok";
     }

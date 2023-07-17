@@ -1,6 +1,5 @@
 package com.Teletubbies.Apollo.jwt.service;
 
-import com.Teletubbies.Apollo.auth.domain.ApolloUser;
 import com.Teletubbies.Apollo.jwt.JwtTokenProvider;
 import com.Teletubbies.Apollo.jwt.domain.ApolloUserToken;
 import com.Teletubbies.Apollo.jwt.dto.TokenInfo;
@@ -19,7 +18,7 @@ public class JwtService {
     private final ApolloUserTokenRepository apolloUserTokenRepository;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
-    public void saveToken(String userLogin, String userId){
+    public void toMakeTokenSaveObj(String userLogin, String userId){
         apolloUserTokenRepository.save(new ApolloUserToken(userLogin, userId));
     }
     public TokenInfo login(String userLogin, String userId){
