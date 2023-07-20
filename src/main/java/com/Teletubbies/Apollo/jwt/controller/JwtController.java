@@ -1,5 +1,7 @@
 package com.Teletubbies.Apollo.jwt.controller;
 
+import com.Teletubbies.Apollo.auth.domain.ApolloUser;
+import com.Teletubbies.Apollo.auth.repository.UserRepository;
 import com.Teletubbies.Apollo.jwt.dto.TokenInfo;
 import com.Teletubbies.Apollo.jwt.dto.UserLoginRequestDto;
 import com.Teletubbies.Apollo.jwt.service.JwtService;
@@ -10,19 +12,32 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Optional;
+
 @Slf4j
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class JwtController {
+    private final UserRepository userRepository;
     private final JwtService jwtService;
     @PostMapping("/login/user")
-    public String login(@RequestBody UserLoginRequestDto userLoginRequestDto){
+    public HashMap<String, Object> login(@RequestBody UserLoginRequestDto userLoginRequestDto){
         String userLogin = userLoginRequestDto.getUserLogin();
         String userId = userLoginRequestDto.getUserId();
         log.info("user login: " + userLogin);
         log.info("user id: " + userId);
-        TokenInfo login = jwtService.login(userLogin, userId);
-        return "ok";
+        HashMap<String, Object> resultJSON = new HashMap<>();
+
+        Optional<ApolloUser> loginUser = userRepository.findByLogin(userLogin);
+        // 회원가입 하지 않은 유저, 회원 저장로직 요청을 프론트에게 다시 해달라고 함
+        if (loginUser.isEmpty()){
+            resultJSON.put("result", "we have to save user");
+            return resultJSON;
+        }
+        //회원가입을 한 유저, token 발행
+        resultJSON.put("result", jwtService.login(userLogin, userId));
+        return resultJSON;
     }
 }
