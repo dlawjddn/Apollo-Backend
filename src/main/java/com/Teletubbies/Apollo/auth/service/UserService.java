@@ -42,5 +42,8 @@ public class UserService {
         if (optionalUser != null && optionalUser.isPresent()) return optionalUser.get();
         else throw new ApolloException(NOT_FOUND_USER_ERROR, "해당 이름에 맞는 회원이 없습니다");
     }
+    public Optional<ApolloUser> findByLoginNullAble(String login){
+        return userRepository.findByLogin(login);
+    }
 
 }
