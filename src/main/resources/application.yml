@@ -5,8 +5,8 @@ spring:
     password: ${MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
-    hibernate:
-      ddl-auto: create-drop
+    # hibernate:
+    #   ddl-auto: create-drop
     properties:
       hibernate:
         show_sql: true
