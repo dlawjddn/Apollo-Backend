@@ -2,6 +2,7 @@ package com.Teletubbies.Apollo.auth.controller;
 
 import com.Teletubbies.Apollo.auth.domain.ApolloUser;
 import com.Teletubbies.Apollo.auth.domain.Repo;
+import com.Teletubbies.Apollo.auth.dto.RepoInfoJsonResponse;
 import com.Teletubbies.Apollo.auth.service.RepoService;
 import com.Teletubbies.Apollo.auth.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -21,10 +24,10 @@ public class RepoController {
     private final RepoService repoService;
 
     @GetMapping("/repository/list/{userLogin}")
-    public String saveRepoList(@PathVariable String userLogin) throws ParseException {
+    public List<RepoInfoJsonResponse> saveRepoList(@PathVariable String userLogin) throws ParseException {
         ApolloUser findApolloUser = userService.getUserByLogin(userLogin);
-        repoService.saveRepo(findApolloUser);
-        return "repo list success";
+        List<RepoInfoJsonResponse> repoInfoJsonResponses = repoService.saveRepo(findApolloUser);
+        return repoInfoJsonResponses;
     }
     @GetMapping("/repository/find/login/{userLogin}")
     public String findByLogin(@PathVariable String userLogin){

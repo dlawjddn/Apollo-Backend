@@ -2,6 +2,7 @@ package com.Teletubbies.Apollo.auth.service;
 
 import com.Teletubbies.Apollo.auth.domain.ApolloUser;
 import com.Teletubbies.Apollo.auth.domain.Repo;
+import com.Teletubbies.Apollo.auth.dto.RepoInfoJsonResponse;
 import com.Teletubbies.Apollo.auth.dto.RepoInfoResponse;
 import com.Teletubbies.Apollo.auth.repository.RepoRepository;
 import com.Teletubbies.Apollo.core.exception.ApolloException;
@@ -59,13 +60,24 @@ public class RepoService {
         return repoInfo;
     }
     @Transactional
-    public void saveRepo(ApolloUser apolloUser) throws ParseException {
+    public List<RepoInfoJsonResponse> saveRepo(ApolloUser apolloUser) throws ParseException {
+        List<RepoInfoJsonResponse> repoInfoJson= new ArrayList<>(); // JSON 용 리스트 생성
+
         List<RepoInfoResponse> repoInfos = getRepoURL(apolloUser);
         log.info("get repo list ok");
+
+        for (RepoInfoResponse repoInfo : repoInfos) {
+            repoInfoJson.add(repoInfo.changeObjToJSON(repoInfo));
+        }
+        log.info("클라이언트에 보낼 리스트 생성 완료");
+
         for (RepoInfoResponse response : repoInfos) {
             if (repoRepository.existsById(response.getId())) continue;
             repoRepository.save(response.changeDTOtoObj(response));
         }
+        log.info("레포지토리 중복 검사 완료");
+
+        return repoInfoJson; //  클라이언트에 보낼 리스트 반환
     }
     @Transactional(readOnly = true)
     public List<Repo> findByLogin(ApolloUser apolloUser){

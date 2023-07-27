@@ -20,4 +20,11 @@ public class RepoInfoResponse {
     public Repo changeDTOtoObj(RepoInfoResponse response){
         return new Repo(response);
     }
+    public RepoInfoJsonResponse changeObjToJSON(RepoInfoResponse response){
+        RepoInfoJsonResponse repoInfoJsonResponse = new RepoInfoJsonResponse();
+        repoInfoJsonResponse.setUserLogin(response.getUserLogin());
+        repoInfoJsonResponse.setRepoName(response.getRepoName());
+        repoInfoJsonResponse.setRepoUrl(response.getRepoURL());
+        return repoInfoJsonResponse;
+    }
 }
