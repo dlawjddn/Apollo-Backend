@@ -2,6 +2,7 @@ package com.Teletubbies.Apollo.jwt.service;
 
 import com.Teletubbies.Apollo.jwt.JwtTokenProvider;
 import com.Teletubbies.Apollo.jwt.domain.ApolloUserToken;
+import com.Teletubbies.Apollo.jwt.domain.Token;
 import com.Teletubbies.Apollo.jwt.dto.TokenInfo;
 import com.Teletubbies.Apollo.jwt.repository.ApolloUserTokenRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ public class JwtService {
     private final ApolloUserTokenRepository apolloUserTokenRepository;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final TokenService tokenService;
     public void toMakeTokenSaveObj(String userLogin, String userId){
         apolloUserTokenRepository.save(new ApolloUserToken(userLogin, userId));
     }
@@ -43,6 +45,8 @@ public class JwtService {
         log.info("token GrantType: "+tokenInfo.getGrantType());
         log.info("token access-token: "+tokenInfo.getAccessToken());
         log.info("token refresh-token: "+tokenInfo.getRefreshToken());
+
+        tokenService.saveToken(new Token(userId, tokenInfo));
 
         return tokenInfo;
     }
