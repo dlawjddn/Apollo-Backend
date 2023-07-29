@@ -1,6 +1,7 @@
 package com.Teletubbies.Apollo.auth.domain;
 
 import com.Teletubbies.Apollo.auth.dto.MemberInfoResponse;
+import com.Teletubbies.Apollo.credential.domain.Credential;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,6 +25,9 @@ public class ApolloUser {
     @OneToMany
     @JoinColumn(name = "user_id")
     private List<Repo> repos;
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private Credential credential;
 
     public ApolloUser(MemberInfoResponse memberInfoResponse) {
         this.id = memberInfoResponse.getOauthId();
