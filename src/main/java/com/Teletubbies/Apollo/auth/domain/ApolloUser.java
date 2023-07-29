@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 
 @Entity
 @NoArgsConstructor
@@ -19,6 +21,9 @@ public class ApolloUser {
     private String profileUrl;
     @Column(nullable=true)
     private String email;
+    @OneToMany
+    @JoinColumn(name = "user_id")
+    private List<Repo> repos;
 
     public ApolloUser(MemberInfoResponse memberInfoResponse) {
         this.id = memberInfoResponse.getOauthId();

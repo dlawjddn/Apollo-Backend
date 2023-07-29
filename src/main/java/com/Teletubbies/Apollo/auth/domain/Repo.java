@@ -11,9 +11,13 @@ import lombok.NoArgsConstructor;
 public class Repo {
     @Id
     private Long id;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private ApolloUser apolloUser;
     private String repoName;
     private String repoUrl;
     private String ownerLogin;
+
     public Repo(RepoInfoResponse response){
         this.id = response.getId();
         this.ownerLogin = response.getUserLogin();
