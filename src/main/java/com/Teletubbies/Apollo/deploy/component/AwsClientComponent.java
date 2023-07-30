@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
 import software.amazon.awssdk.services.ec2.Ec2Client;
 
 @Component
@@ -20,6 +21,14 @@ public class AwsClientComponent {
     public Ec2Client createEc2Client() {
         AwsBasicCredentials awsCred = AwsBasicCredentials.create(awsServiceDto.getAccessKey(), awsServiceDto.getSecretKey());
         return Ec2Client.builder()
+                .region(Region.of(awsServiceDto.getRegion()))
+                .credentialsProvider(StaticCredentialsProvider.create(awsCred))
+                .build();
+    }
+
+    public CloudFormationClient createCFClient() {
+        AwsBasicCredentials awsCred = AwsBasicCredentials.create(awsServiceDto.getAccessKey(), awsServiceDto.getSecretKey());
+        return CloudFormationClient.builder()
                 .region(Region.of(awsServiceDto.getRegion()))
                 .credentialsProvider(StaticCredentialsProvider.create(awsCred))
                 .build();
