@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
 import software.amazon.awssdk.services.cloudformation.model.CloudFormationException;
+import software.amazon.awssdk.services.cloudformation.model.CreateStackRequest;
 import software.amazon.awssdk.services.cloudformation.model.DescribeStacksResponse;
 import software.amazon.awssdk.services.cloudformation.model.Stack;
 
@@ -25,8 +26,13 @@ public class AWSCloudFormationService {
             "https://s3.amazonaws.com/apollo-script/Apollo-Script/cloudformation/api.yaml" :
             "https://s3.amazonaws.com/apollo-script/Apollo-Script/cloudformation/client.yaml";
 
+        CreateStackRequest stackRequest = CreateStackRequest.builder()
+                .templateURL(templateURL)
+                .stackName(stackName)
+                .build();
+
         try {
-            cloudFormationClient.createStack(builder -> builder.stackName(stackName).templateURL(templateURL));
+            cloudFormationClient.createStack(stackRequest);
             log.info("Create stack: " + stackName + " successfully");
         } catch (Exception e) {
             log.error("Error occurred while creating stack: " + e.getMessage());
