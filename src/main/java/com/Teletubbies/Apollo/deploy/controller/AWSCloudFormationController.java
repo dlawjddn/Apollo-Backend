@@ -13,14 +13,16 @@ import org.springframework.web.bind.annotation.*;
 public class AWSCloudFormationController {
     private final AWSCloudFormationService awsCloudFormationService;
 
-    @PostMapping("/cloudformation/{stackName}")
-    public ResponseEntity<String> createStack(@PathVariable String stackName, @RequestBody String type) {
-        awsCloudFormationService.createStack(stackName, type);
+    @PostMapping("/cloudformation")
+    public ResponseEntity<String> createStack(@RequestBody String repoName,
+                                              @RequestBody String stackName,
+                                              @RequestBody String type) {
+        awsCloudFormationService.createStack(repoName, stackName, type);
         return ResponseEntity.ok(stackName + " is created successfully");
     }
 
-    @DeleteMapping("/cloudformation/{stackName}")
-    public ResponseEntity<String> deleteStack(@PathVariable String stackName) {
+    @DeleteMapping("/cloudformation")
+    public ResponseEntity<String> deleteStack(@RequestBody String stackName) {
         awsCloudFormationService.deleteStack(stackName);
         return ResponseEntity.ok(stackName + " is deleted successfully");
     }

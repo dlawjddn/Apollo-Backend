@@ -48,6 +48,7 @@ dependencies {
 	implementation platform('software.amazon.awssdk:bom:2.20.56')
 	implementation 'software.amazon.awssdk:ec2'
 	implementation 'software.amazon.awssdk:cloudformation'
+	implementation 'software.amazon.awssdk:s3'
 
 	testCompileOnly 'org.projectlombok:lombok:1.18.28'
 	testAnnotationProcessor 'org.projectlombok:lombok:1.18.28'
