@@ -25,6 +25,9 @@ public class Credential {
 
     private String region;
 
+    @Column(name = "github_oauth_token")
+    private String githubOAuthToken;
+
     @OneToOne
     @JoinColumn(name = "user_id")
     private ApolloUser apolloUser;
