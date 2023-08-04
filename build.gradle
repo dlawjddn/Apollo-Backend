@@ -47,6 +47,11 @@ dependencies {
 	// aws
 	implementation platform('software.amazon.awssdk:bom:2.20.56')
 	implementation 'software.amazon.awssdk:ec2'
+	implementation 'software.amazon.awssdk:cloudformation'
+	implementation 'software.amazon.awssdk:s3'
+
+	// swagger
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
 
 	testCompileOnly 'org.projectlombok:lombok:1.18.28'
 	testAnnotationProcessor 'org.projectlombok:lombok:1.18.28'
