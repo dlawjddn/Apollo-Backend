@@ -1,5 +1,6 @@
 package com.Teletubbies.Apollo.deploy.controller;
 
+import com.Teletubbies.Apollo.deploy.dto.StackRequestDto;
 import com.Teletubbies.Apollo.deploy.service.AWSCloudFormationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,8 +22,18 @@ public class AWSCloudFormationController {
         return ResponseEntity.ok(stackName + " is created successfully");
     }
 
+    @PostMapping("/cloudformation/client")
+    public ResponseEntity<String> createClientStack(
+            @RequestBody StackRequestDto stackRequestDto
+            ) {
+        String repoName = stackRequestDto.getRepoName();
+        awsCloudFormationService.createClientStack(repoName);
+        return ResponseEntity.ok("Client stack is created successfully");
+    }
+
     @DeleteMapping("/cloudformation")
-    public ResponseEntity<String> deleteStack(@RequestBody String stackName) {
+    public ResponseEntity<String> deleteStack(@RequestBody StackRequestDto stackRequestDto) {
+        String stackName = stackRequestDto.getRepoName();
         awsCloudFormationService.deleteStack(stackName);
         return ResponseEntity.ok(stackName + " is deleted successfully");
     }
