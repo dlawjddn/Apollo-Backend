@@ -2,15 +2,14 @@ package com.Teletubbies.Apollo.deploy.service;
 
 import com.Teletubbies.Apollo.auth.domain.Repo;
 import com.Teletubbies.Apollo.auth.repository.RepoRepository;
+import com.Teletubbies.Apollo.credential.domain.Credential;
+import com.Teletubbies.Apollo.credential.repository.CredentialRepository;
 import com.Teletubbies.Apollo.deploy.component.AwsClientComponent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
 import software.amazon.awssdk.services.cloudformation.model.*;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.DeleteBucketRequest;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,11 +20,13 @@ public class AWSCloudFormationService {
     private final CloudFormationClient cloudFormationClient;
     private final S3Client s3Client;
     private final RepoRepository repoRepository;
+    private final CredentialRepository credentialRepository;
 
-    public AWSCloudFormationService(AwsClientComponent awsClientComponent, RepoRepository repoRepository) {
+    public AWSCloudFormationService(AwsClientComponent awsClientComponent, RepoRepository repoRepository, CredentialRepository credentialRepository) {
         this.cloudFormationClient = awsClientComponent.createCFClient();
         this.s3Client = awsClientComponent.createS3Client();
         this.repoRepository = repoRepository;
+        this.credentialRepository = credentialRepository;
     }
 
     public void createStack(String repoName, String stackName, String type) {
@@ -60,6 +61,8 @@ public class AWSCloudFormationService {
                 log.info("repo url: " + repo.getRepoUrl());
                 log.info("repo owner login: " + repo.getOwnerLogin());
 
+                Optional<Credential> credential = credentialRepository.findByApolloUser(repo.getApolloUser());
+
                 CreateStackRequest stackRequest = CreateStackRequest.builder()
                         .templateURL(templateURL)
                         .stackName(repoName)
@@ -67,7 +70,7 @@ public class AWSCloudFormationService {
                                 Parameter.builder().parameterKey("RepoName").parameterValue(repo.getRepoName()).build(),
                                 Parameter.builder().parameterKey("UserLogin").parameterValue(repo.getOwnerLogin()).build(),
                                 Parameter.builder().parameterKey("RepoLocation").parameterValue(repo.getRepoUrl()).build(),
-                                Parameter.builder().parameterKey("GithubToken").parameterValue("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").build()
+                                Parameter.builder().parameterKey("GithubToken").parameterValue("GITHUB_TOKEN").build()
                         )
                         .capabilitiesWithStrings("CAPABILITY_IAM")
                         .build();
