@@ -2,7 +2,9 @@ package com.Teletubbies.Apollo.deploy.service;
 
 import com.Teletubbies.Apollo.auth.domain.Repo;
 import com.Teletubbies.Apollo.auth.repository.RepoRepository;
+import com.Teletubbies.Apollo.core.exception.CustomErrorCode;
 import com.Teletubbies.Apollo.credential.domain.Credential;
+import com.Teletubbies.Apollo.credential.exception.CredentialException;
 import com.Teletubbies.Apollo.credential.repository.CredentialRepository;
 import com.Teletubbies.Apollo.deploy.component.AwsClientComponent;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +15,8 @@ import software.amazon.awssdk.services.s3.S3Client;
 
 import java.util.List;
 import java.util.Optional;
+
+import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.CREDENTIAL_NOT_FOUND_ERROR;
 
 @Service
 @Slf4j
@@ -60,8 +64,10 @@ public class AWSCloudFormationService {
                 log.info("Repo 정보는 다음과 같습니다: " + repo.getRepoName());
                 log.info("repo url: " + repo.getRepoUrl());
                 log.info("repo owner login: " + repo.getOwnerLogin());
+                Long userId = repo.getApolloUser().getId();
 
-                Optional<Credential> credential = credentialRepository.findByApolloUser(repo.getApolloUser());
+                Credential credential = credentialRepository.findByApolloUserId(userId)
+                        .orElseThrow(() -> new CredentialException(CREDENTIAL_NOT_FOUND_ERROR, "Credential 정보가 없습니다."));
 
                 CreateStackRequest stackRequest = CreateStackRequest.builder()
                         .templateURL(templateURL)
@@ -70,7 +76,7 @@ public class AWSCloudFormationService {
                                 Parameter.builder().parameterKey("RepoName").parameterValue(repo.getRepoName()).build(),
                                 Parameter.builder().parameterKey("UserLogin").parameterValue(repo.getOwnerLogin()).build(),
                                 Parameter.builder().parameterKey("RepoLocation").parameterValue(repo.getRepoUrl()).build(),
-                                Parameter.builder().parameterKey("GithubToken").parameterValue("GITHUB_TOKEN").build()
+                                Parameter.builder().parameterKey("GithubToken").parameterValue(credential.getGithubOAuthToken()).build()
                         )
                         .capabilitiesWithStrings("CAPABILITY_IAM")
                         .build();
