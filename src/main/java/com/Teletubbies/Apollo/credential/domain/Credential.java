@@ -17,6 +17,9 @@ public class Credential {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "aws_account_id")
+    private String awsAccountId;
+
     @Column(name = "access_key")
     private String accessKey;
 

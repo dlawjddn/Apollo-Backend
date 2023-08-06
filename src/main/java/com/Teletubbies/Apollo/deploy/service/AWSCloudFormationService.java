@@ -101,8 +101,20 @@ public class AWSCloudFormationService {
         }
     }
 
-    public void createApiStack(String repoName) {
-        String templateURL = "https://s3.amazonaws.com/apollo-script/Apollo-Script/cloudformation/api.yaml";
+    public void createServerStack(String repoName) {
+        String templateURL = "https://s3.amazonaws.com/apollo-script/api-build-test.yaml";
+
+        CreateStackRequest stackRequest = CreateStackRequest.builder()
+                .templateURL(templateURL)
+                .stackName(repoName)
+                .parameters(
+                        Parameter.builder().parameterKey("AWSRegion").parameterValue("ap-northeast-2").build()
+                )
+                .capabilitiesWithStrings("CAPABILITY_IAM")
+                .build();
+
+        cloudFormationClient.createStack(stackRequest);
+        log.info("Create stack: " + repoName + " successfully");
     }
 
     public void deleteStack(String stackName) {
