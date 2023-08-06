@@ -22,11 +22,9 @@ public class ApolloUser {
     private String profileUrl;
     @Column(nullable=true)
     private String email;
-    @OneToMany
-    @JoinColumn(name = "user_id")
+    @OneToMany(mappedBy = "apolloUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Repo> repos;
-    @OneToOne
-    @JoinColumn(name = "user_id")
+    @OneToOne(mappedBy = "apolloUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Credential credential;
 
     public ApolloUser(MemberInfoResponse memberInfoResponse) {
