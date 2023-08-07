@@ -25,6 +25,7 @@ public class CredentialController {
         try {
             ApolloUser user = userService.getUserById(userId);
             Credential credential = new Credential();
+            credential.setAwsAccountId(credentialDto.getAwsAccountId());
             credential.setAccessKey(credentialDto.getAccessKey());
             credential.setSecretKey(credentialDto.getSecretKey());
             credential.setRegion(credentialDto.getRegion());

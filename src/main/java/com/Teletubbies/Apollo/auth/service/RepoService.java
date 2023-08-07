@@ -54,7 +54,8 @@ public class RepoService {
                     apolloUser.getLogin(),
                     (Long) jsonDataObject.get("id"),
                     jsonDataObject.get("name").toString(),
-                    jsonDataObject.get("html_url").toString())
+                    jsonDataObject.get("html_url").toString(),
+                    apolloUser)
             );
         }
         return repoInfo;

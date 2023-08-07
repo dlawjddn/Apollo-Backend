@@ -1,10 +1,6 @@
 package com.Teletubbies.Apollo.deploy.service;
 
-import com.Teletubbies.Apollo.auth.domain.Repo;
 import com.Teletubbies.Apollo.auth.repository.RepoRepository;
-import com.Teletubbies.Apollo.core.exception.CustomErrorCode;
-import com.Teletubbies.Apollo.credential.domain.Credential;
-import com.Teletubbies.Apollo.credential.exception.CredentialException;
 import com.Teletubbies.Apollo.credential.repository.CredentialRepository;
 import com.Teletubbies.Apollo.deploy.component.AwsClientComponent;
 import lombok.extern.slf4j.Slf4j;
@@ -14,9 +10,6 @@ import software.amazon.awssdk.services.cloudformation.model.*;
 import software.amazon.awssdk.services.s3.S3Client;
 
 import java.util.List;
-import java.util.Optional;
-
-import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.CREDENTIAL_NOT_FOUND_ERROR;
 
 @Service
 @Slf4j
@@ -31,80 +24,6 @@ public class AWSCloudFormationService {
         this.s3Client = awsClientComponent.createS3Client();
         this.repoRepository = repoRepository;
         this.credentialRepository = credentialRepository;
-    }
-
-    public void createStack(String repoName, String stackName, String type) {
-        String templateURL = type.equals("api") ?
-            "https://s3.amazonaws.com/apollo-script/Apollo-Script/cloudformation/api.yaml" :
-            //"https://s3.amazonaws.com/apollo-script/Apollo-Script/cloudformation/client.yaml";
-                "https://s3.amazonaws.com/apollo-script/client-build-test.yaml";
-
-        repoRepository.findByRepoName(repoName);
-
-        CreateStackRequest stackRequest = CreateStackRequest.builder()
-                .templateURL(templateURL)
-                .stackName(stackName)
-                .build();
-
-        try {
-            cloudFormationClient.createStack(stackRequest);
-            log.info("Create stack: " + stackName + " successfully");
-        } catch (Exception e) {
-            log.error("Error occurred while creating stack: " + e.getMessage());
-        }
-    }
-
-    public void createClientStack(String repoName) {
-        String templateURL = "https://s3.amazonaws.com/apollo-script/client-build-test.yaml";
-        try {
-            Optional<Repo> repoInfoResponse = repoRepository.findByRepoName(repoName);
-
-            if (repoInfoResponse.isPresent()) {
-                Repo repo = repoInfoResponse.get();
-                log.info("Repo 정보는 다음과 같습니다: " + repo.getRepoName());
-                log.info("repo url: " + repo.getRepoUrl());
-                log.info("repo owner login: " + repo.getOwnerLogin());
-                Long userId = repo.getApolloUser().getId();
-
-                Credential credential = credentialRepository.findByApolloUserId(userId)
-                        .orElseThrow(() -> new CredentialException(CREDENTIAL_NOT_FOUND_ERROR, "Credential 정보가 없습니다."));
-
-                CreateStackRequest stackRequest = CreateStackRequest.builder()
-                        .templateURL(templateURL)
-                        .stackName(repoName)
-                        .parameters(
-                                Parameter.builder().parameterKey("RepoName").parameterValue(repo.getRepoName()).build(),
-                                Parameter.builder().parameterKey("UserLogin").parameterValue(repo.getOwnerLogin()).build(),
-                                Parameter.builder().parameterKey("RepoLocation").parameterValue(repo.getRepoUrl()).build(),
-                                Parameter.builder().parameterKey("GithubToken").parameterValue(credential.getGithubOAuthToken()).build()
-                        )
-                        .capabilitiesWithStrings("CAPABILITY_IAM")
-                        .build();
-
-                cloudFormationClient.createStack(stackRequest);
-
-                while (true) {
-                    DescribeStacksRequest describeRequest = DescribeStacksRequest.builder()
-                            .stackName(repoName)
-                            .build();
-                    DescribeStacksResponse describeResponse = cloudFormationClient.describeStacks(describeRequest);
-
-                    String stackStatus = describeResponse.stacks().get(0).stackStatusAsString();
-
-                    if (stackStatus.equals("CREATE_COMPLETE")) {
-                        log.info("Create stack: " + repoName + " successfully");
-                        break;
-                    } else if (stackStatus.endsWith("FAILED") || stackStatus.equals("ROLLBACK_COMPLETE")) {
-                        log.info("스택생성이 비정상적으로 종료되었습니다");
-                        break; // Break on failure
-                    }
-                    // Wait for a bit before checking again
-                    Thread.sleep(10000); // 10 seconds
-                }
-            }
-        } catch (Exception e) {
-            log.info("스택 생성중에 에러가 발생했습니다.: " + e.getMessage());
-        }
     }
 
     public void createServerStack(String repoName) {
@@ -145,7 +64,7 @@ public class AWSCloudFormationService {
         }
     }
 
-    public void describeStacks() {
+    public void describeStacks(String stackName) {
         try {
             DescribeStacksResponse describeStacksResponse = cloudFormationClient.describeStacks();
             List<Stack> stacks = describeStacksResponse.stacks();
@@ -157,22 +76,5 @@ public class AWSCloudFormationService {
         } catch (CloudFormationException e) {
             log.error("Error occurred while describing stacks: " + e.getMessage());
         }
-    }
-
-    public String getBucketName(String stackName) {
-        DescribeStacksRequest describeStacksRequest = DescribeStacksRequest.builder()
-                .stackName(stackName)
-                .build();
-        DescribeStacksResponse describeStackResponse = cloudFormationClient.describeStacks(describeStacksRequest);
-
-        Stack stack = describeStackResponse.stacks().get(0);
-
-        for (Output output: stack.outputs()) {
-            log.info(output.outputKey() + " : " + output.outputValue());
-            if (output.outputKey().equals("no-duplicated-bucket-name-with-apollo")) {
-                return output.outputValue();
-            }
-        }
-        throw new RuntimeException("Bucket name not found in stack: " + stackName);
     }
 }
