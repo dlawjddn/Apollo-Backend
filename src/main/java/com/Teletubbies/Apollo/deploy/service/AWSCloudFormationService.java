@@ -26,37 +26,8 @@ public class AWSCloudFormationService {
         this.credentialRepository = credentialRepository;
     }
 
-    public void createServerStack(String repoName) {
-        String templateURL = "https://s3.amazonaws.com/apollo-script/api-build-test.yaml";
-
-        CreateStackRequest stackRequest = CreateStackRequest.builder()
-                .templateURL(templateURL)
-                .stackName(repoName)
-                .parameters(
-                        Parameter.builder().parameterKey("AWSRegion").parameterValue("ap-northeast-2").build()
-                )
-                .capabilitiesWithStrings("CAPABILITY_IAM")
-                .build();
-
-        cloudFormationClient.createStack(stackRequest);
-        log.info("Create stack: " + repoName + " successfully");
-    }
-
     public void deleteStack(String stackName) {
         try {
-//            String bucketName = getBucketName(stackName);
-//            ListObjectsV2Request listReq = ListObjectsV2Request.builder()
-//                    .bucket(bucketName)
-//                    .build();
-//            ListObjectsV2Response listRes = s3Client.listObjectsV2(listReq);
-//
-//            for (software.amazon.awssdk.services.s3.model.S3Object s3Object : listRes.contents()) {
-//                s3Client.deleteObject(builder -> builder.bucket(bucketName).key(s3Object.key()));
-//            }
-//            DeleteBucketRequest deleteBucketRequest = DeleteBucketRequest.builder()
-//                    .bucket(bucketName)
-//                    .build();
-//            s3Client.deleteBucket(deleteBucketRequest);
             cloudFormationClient.deleteStack(builder -> builder.stackName(stackName));
             log.info("Delete stack: " + stackName + " successfully");
         } catch (Exception e) {
