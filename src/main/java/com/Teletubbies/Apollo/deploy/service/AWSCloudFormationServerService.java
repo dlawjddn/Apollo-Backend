@@ -11,8 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
 import software.amazon.awssdk.services.cloudformation.model.*;
-
-import java.util.List;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.*;
 
 import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.NOT_FOUND_REPO_ERROR;
 
@@ -20,11 +20,13 @@ import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.NOT_FOUND_RE
 @Service
 public class AWSCloudFormationServerService {
     private final CloudFormationClient cloudFormationClient;
+    private final S3Client s3Client;
     private final RepoRepository repoRepository;
     private final CredentialRepository credentialRepository;
 
     public AWSCloudFormationServerService(AwsClientComponent awsClientComponent, RepoRepository repoRepository, CredentialRepository credentialRepository) {
         this.cloudFormationClient = awsClientComponent.createCFClient();
+        this.s3Client = awsClientComponent.createS3Client();
         this.repoRepository = repoRepository;
         this.credentialRepository = credentialRepository;
     }
@@ -51,10 +53,11 @@ public class AWSCloudFormationServerService {
                     .stackName(repoName)
                     .parameters(
                             Parameter.builder().parameterKey("AWSRegion").parameterValue(credential.getRegion()).build(),
-                            Parameter.builder().parameterKey("AWSAccountId").parameterValue(credential.getAwsAccountId()).build(),
+                            Parameter.builder().parameterKey("accountId").parameterValue(credential.getAwsAccountId()).build(),
                             Parameter.builder().parameterKey("GithubRepositoryName").parameterValue(repo.getRepoName()).build(),
                             Parameter.builder().parameterKey("RepoLocation").parameterValue(repo.getRepoUrl()).build(),
-                            Parameter.builder().parameterKey("RepoLogin").parameterValue(repo.getOwnerLogin()).build()
+                            Parameter.builder().parameterKey("RepoLogin").parameterValue(repo.getOwnerLogin()).build(),
+                            Parameter.builder().parameterKey("GithubToken").parameterValue(credential.getGithubOAuthToken()).build()
                     )
                     .capabilitiesWithStrings("CAPABILITY_IAM")
                     .build();
@@ -87,18 +90,64 @@ public class AWSCloudFormationServerService {
     }
 
     public void deleteServerStack(String stackName) {
+        String bucketName = getBucketName(stackName);
+        if (bucketName != null) {
+            deleteS3Bucket(bucketName);
+            deleteCloudFormationStack(stackName);
+        } else {
+            log.info("버킷이 존재하지 않습니다.");
+        }
+    }
+
+    public String getBucketName(String stackName) {
         try {
-            DescribeStacksResponse describeStacksResponse = cloudFormationClient.describeStacks();
-            List<Stack> stacks = describeStacksResponse.stacks();
-            for (Stack stack : stacks) {
-                log.info("Stack name: " + stack.stackName());
-                log.info("Stack status: " + stack.stackStatusAsString());
+            DescribeStackResourcesRequest request = DescribeStackResourcesRequest.builder()
+                    .stackName(stackName)
+                    .build();
+            DescribeStackResourcesResponse response = cloudFormationClient.describeStackResources(request);
+            for (StackResource stackResource : response.stackResources()) {
+                if ("AWS::S3::Bucket".equals(stackResource.resourceType())) {
+                    return stackResource.physicalResourceId();
+                }
             }
-            log.info("Describe stacks successfully");
-        } catch (CloudFormationException e) {
-            log.error("Error occurred while describing stacks: " + e.getMessage());
         } catch (Exception e) {
-            log.info("Error occurred while deleting stacks: " + e.getMessage());
+            log.info("Error occurred while fetching S3 bucket for stack: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public void deleteS3Bucket(String bucketName) {
+        try {
+            emptyS3Bucket(bucketName);
+            DeleteBucketRequest deleteBucketRequest = DeleteBucketRequest.builder().bucket(bucketName).build();
+            s3Client.deleteBucket(deleteBucketRequest);
+            log.info("Delete bucket: " + bucketName + " successfully");
+        } catch (Exception e) {
+            log.info("버킷 삭제중에 에러가 발생했습니다.: " + e.getMessage());
+        }
+    }
+
+    public void emptyS3Bucket(String bucketName) {
+        ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder().bucket(bucketName).build();
+        ListObjectsV2Response listObjectsV2Response;
+
+        do {
+            listObjectsV2Response = s3Client.listObjectsV2(listObjectsV2Request);
+            for (S3Object s3Object : listObjectsV2Response.contents()) {
+                DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder().bucket(bucketName).key(s3Object.key()).build();
+                s3Client.deleteObject(deleteObjectRequest);
+            }
+            listObjectsV2Request = listObjectsV2Request.toBuilder().continuationToken(listObjectsV2Response.nextContinuationToken()).build();
+        } while (listObjectsV2Response.isTruncated());
+    }
+
+    public void deleteCloudFormationStack(String stackName) {
+        try {
+            DeleteStackRequest deleteStackRequest = DeleteStackRequest.builder().stackName(stackName).build();
+            cloudFormationClient.deleteStack(deleteStackRequest);
+            log.info("Delete stack: " + stackName + " successfully");
+        } catch (Exception e) {
+            log.info("스택 삭제중에 에러가 발생했습니다.: " + e.getMessage());
         }
     }
 }

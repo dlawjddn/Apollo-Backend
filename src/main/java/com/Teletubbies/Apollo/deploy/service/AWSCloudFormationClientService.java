@@ -95,7 +95,6 @@ public class AWSCloudFormationClientService {
         } else {
             log.info("버킷이 존재하지 않습니다.");
         }
-
     }
 
     public void deleteS3Bucket(String bucketName) {
