@@ -18,8 +18,9 @@ public class Repo {
     private String repoUrl;
     private String ownerLogin;
 
-    public Repo(RepoInfoResponse response){
+    public Repo(RepoInfoResponse response) {
         this.id = response.getId();
+        this.apolloUser = response.getApolloUser();
         this.ownerLogin = response.getUserLogin();
         this.repoName = response.getRepoName();
         this.repoUrl = response.getRepoURL();

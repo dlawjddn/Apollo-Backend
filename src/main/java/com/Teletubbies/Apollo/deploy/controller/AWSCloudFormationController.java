@@ -1,6 +1,7 @@
 package com.Teletubbies.Apollo.deploy.controller;
 
 import com.Teletubbies.Apollo.deploy.dto.StackRequestDto;
+import com.Teletubbies.Apollo.deploy.service.AWSCloudFormationClientService;
 import com.Teletubbies.Apollo.deploy.service.AWSCloudFormationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,15 +16,8 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Tag(name = "AWS CloudFormation Controller", description = "AWS CloudFormation Controller 관련 Rest API")
 public class AWSCloudFormationController {
+    private final AWSCloudFormationClientService awsCloudformationClientService;
     private final AWSCloudFormationService awsCloudFormationService;
-
-    @PostMapping("/cloudformation")
-    public ResponseEntity<String> createStack(@RequestBody String repoName,
-                                              @RequestBody String stackName,
-                                              @RequestBody String type) {
-        awsCloudFormationService.createStack(repoName, stackName, type);
-        return ResponseEntity.ok(stackName + " is created successfully");
-    }
 
     @Operation(summary = "Client stack 생성", description = "CloudFormation을 이용하여 Client stack을 생성한다.")
     @PostMapping("/cloudformation/client")
@@ -31,9 +25,20 @@ public class AWSCloudFormationController {
             @RequestBody StackRequestDto stackRequestDto
             ) {
         String repoName = stackRequestDto.getRepoName();
-        awsCloudFormationService.createClientStack(repoName);
-        return ResponseEntity.ok("Client stack is created successfully");
+        String EndPoint = awsCloudformationClientService.createClientStack(repoName);
+        return ResponseEntity.ok(EndPoint);
     }
+
+    @Operation(summary = "Client stack 제거", description = "CloudFormation을 이용하여 Client stack을 제거한다.")
+    @DeleteMapping("/cloudformation/client")
+    public ResponseEntity<String> deleteClientStack(
+            @RequestBody StackRequestDto stackRequestDto
+            ) {
+        String repoName = stackRequestDto.getRepoName();
+        awsCloudformationClientService.deleteClientStack(repoName);
+        return ResponseEntity.ok("Client stack is deleted successfully");
+    }
+
 
     @Operation(summary = "Server stack 생성", description = "CloudFormation을 이용하여 Server stack을 생성한다.")
     @PostMapping("/cloudformation/server")
@@ -55,8 +60,8 @@ public class AWSCloudFormationController {
 
     @Operation(summary = "Stack 조회", description = "현재 생성되어 있는 stack을 조회한다.")
     @GetMapping("/cloudformation")
-    public ResponseEntity<String> describeStacks() {
-        awsCloudFormationService.describeStacks();
+    public ResponseEntity<String> describeStacks(@RequestBody StackRequestDto stackRequestDto) {
+        awsCloudFormationService.describeStacks(stackRequestDto.getRepoName());
         return ResponseEntity.ok("Describe stacks successfully");
     }
 }
