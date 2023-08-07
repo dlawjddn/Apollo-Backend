@@ -69,11 +69,4 @@ public class AWSCloudFormationController {
         awsCloudFormationService.deleteStack(stackName);
         return ResponseEntity.ok(stackName + " is deleted successfully");
     }
-
-    @Operation(summary = "Stack 조회", description = "현재 생성되어 있는 stack을 조회한다.")
-    @GetMapping("/cloudformation")
-    public ResponseEntity<String> describeStacks(@RequestBody StackRequestDto stackRequestDto) {
-        awsCloudFormationService.describeStacks(stackRequestDto.getRepoName());
-        return ResponseEntity.ok("Describe stacks successfully");
-    }
 }
