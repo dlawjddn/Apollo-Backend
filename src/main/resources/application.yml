@@ -17,10 +17,16 @@ spring:
       name: "dlawjddn"
       password: "dlawjddn"
 
+springdoc:
+  swagger-ui:
+    path: /api-docs
+    use-root-path: true
+
 logging:
   level:
     org.hibernate.SQL: DEBUG
     org.hibernate.type: TRACE
+    org.springframework.security: DEBUG
 
 security:
   oauth:

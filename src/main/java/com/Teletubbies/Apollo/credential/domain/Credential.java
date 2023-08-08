@@ -17,6 +17,9 @@ public class Credential {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "aws_account_id")
+    private String awsAccountId;
+
     @Column(name = "access_key")
     private String accessKey;
 
@@ -37,4 +40,15 @@ public class Credential {
 
     @Column(name = "updated_at")
     private Date updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = new Date();
+        updatedAt = new Date();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = new Date();
+    }
 }

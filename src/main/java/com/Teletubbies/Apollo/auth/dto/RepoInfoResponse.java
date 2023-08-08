@@ -1,5 +1,6 @@
 package com.Teletubbies.Apollo.auth.dto;
 
+import com.Teletubbies.Apollo.auth.domain.ApolloUser;
 import com.Teletubbies.Apollo.auth.domain.Repo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -17,6 +18,7 @@ public class RepoInfoResponse {
     private String repoName;
     @JsonProperty("html_url")
     private String repoURL;
+    private ApolloUser apolloUser;
     public Repo changeDTOtoObj(RepoInfoResponse response){
         return new Repo(response);
     }
