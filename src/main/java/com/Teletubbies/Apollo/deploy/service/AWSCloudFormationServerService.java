@@ -60,6 +60,7 @@ public class AWSCloudFormationServerService {
                             Parameter.builder().parameterKey("GithubToken").parameterValue(credential.getGithubOAuthToken()).build()
                     )
                     .capabilitiesWithStrings("CAPABILITY_IAM")
+                    .capabilitiesWithStrings("CAPABILITY_NAMED_IAM")
                     .build();
 
             cloudFormationClient.createStack(stackRequest);

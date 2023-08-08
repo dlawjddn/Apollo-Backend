@@ -37,7 +37,7 @@ public class RepoService {
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<Void> request = new HttpEntity<>(headers);
         ResponseEntity<String> jsonData = restTemplate.exchange(
-                REPO_LIST_URL + "/" + apolloUser.getLogin() + "/repos",
+                REPO_LIST_URL + "/" + apolloUser.getLogin() + "/repos?per_page=100",
                 HttpMethod.GET,
                 request,
                 String.class
