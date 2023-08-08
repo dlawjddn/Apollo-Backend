@@ -25,7 +25,7 @@ public class UserService {
         if (userRepository.existsById(apolloUserToSave.getId()))
             throw new ApolloException(DUPLICATED_USER_ERROR, "이미 존재하는 회원입니다");
         ApolloUser savedApolloUser = userRepository.save(memberInfoResponse.changeDTOtoObj(memberInfoResponse));
-        log.info("유저 저장 완료");
+        log.info("Service: 유저 저장 완료");
         return savedApolloUser;
     }
     public ApolloUser getUserById(Long id){
