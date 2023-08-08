@@ -40,7 +40,7 @@ public class CredentialController {
         }
     }
 
-    @PutMapping("/credential/{userId}")
+    @PatchMapping("/credential/{userId}")
     public ResponseEntity<Credential> updateCredential(@PathVariable Long userId, @RequestBody Credential credential) {
         ApolloUser user = userService.getUserById(userId);
         try {
