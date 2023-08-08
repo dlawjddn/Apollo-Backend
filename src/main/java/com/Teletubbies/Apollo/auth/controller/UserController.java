@@ -19,7 +19,7 @@ public class UserController {
     @PostMapping("/save/user")
     public String saveUser(@RequestBody MemberInfoResponse memberInfoResponse){
         ApolloUser savedUser = userService.saveUser(memberInfoResponse);
-        log.info("유저 저장 완료");
+        log.info("Controller: 유저 저장 완료");
         jwtService.toMakeTokenSaveObj(savedUser.getLogin(), savedUser.getId().toString());
         log.info("Token 기초 정보 저장 완료");
         return "ok";
