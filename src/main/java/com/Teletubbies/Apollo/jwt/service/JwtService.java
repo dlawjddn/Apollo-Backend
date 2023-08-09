@@ -2,26 +2,35 @@ package com.Teletubbies.Apollo.jwt.service;
 
 import com.Teletubbies.Apollo.jwt.JwtTokenProvider;
 import com.Teletubbies.Apollo.jwt.domain.ApolloUserToken;
+import com.Teletubbies.Apollo.jwt.domain.Authority;
 import com.Teletubbies.Apollo.jwt.domain.Token;
+import com.Teletubbies.Apollo.jwt.domain.UserAuthority;
 import com.Teletubbies.Apollo.jwt.dto.TokenInfo;
 import com.Teletubbies.Apollo.jwt.repository.ApolloUserTokenRepository;
+import com.Teletubbies.Apollo.jwt.repository.UserAuthorityRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class JwtService {
     private final ApolloUserTokenRepository apolloUserTokenRepository;
+    private final UserAuthorityRepository userAuthorityRepository;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
     private final TokenService tokenService;
-    public void toMakeTokenSaveObj(String userLogin, String userId){
-        apolloUserTokenRepository.save(new ApolloUserToken(userLogin, userId));
+    public ApolloUserToken toMakeTokenSaveObj(String userLogin, String userId){
+        return apolloUserTokenRepository.save(new ApolloUserToken(userLogin, userId));
+    }
+    @Transactional
+    public UserAuthority saveUserAuthority(ApolloUserToken userToken, Authority authority){
+        return userAuthorityRepository.save(new UserAuthority(userToken, authority));
     }
     public TokenInfo login(String userLogin, String userId){
         // 1. Login ID/PW 를 기반으로 Authentication 객체 생성

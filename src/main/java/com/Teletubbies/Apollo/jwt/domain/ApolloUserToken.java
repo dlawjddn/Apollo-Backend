@@ -17,6 +17,7 @@ public class ApolloUserToken{
     @Column(nullable = false)
     private String userId;
     private boolean activated;
+    /*
 
     @ManyToMany
     @JoinTable(
@@ -24,6 +25,9 @@ public class ApolloUserToken{
             joinColumns = {@JoinColumn(name = "user_for_token_id", referencedColumnName = "user_for_token_id")},
             inverseJoinColumns = {@JoinColumn(name = "authority_name", referencedColumnName = "authority_name")})
     private Set<Authority> authorities;
+
+     */
+
     public ApolloUserToken(String userLogin, String userId){
         this.userLogin = userLogin;
         this.userId = userId;

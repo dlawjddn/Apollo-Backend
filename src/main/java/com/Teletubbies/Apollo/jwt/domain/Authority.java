@@ -1,9 +1,6 @@
 package com.Teletubbies.Apollo.jwt.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,6 +12,13 @@ import lombok.NoArgsConstructor;
 @Table(name = "authorities")
 public class Authority {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "authority_id")
+    private Long id = null;
     @Column(name = "authority_name")
     private String authorityName;
+
+    public Authority(String authorityName) {
+        this.authorityName = authorityName;
+    }
 }
