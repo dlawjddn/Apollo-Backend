@@ -2,7 +2,9 @@ package com.Teletubbies.Apollo.jwt.service;
 
 import com.Teletubbies.Apollo.auth.domain.ApolloUser;
 import com.Teletubbies.Apollo.jwt.domain.ApolloUserToken;
+import com.Teletubbies.Apollo.jwt.domain.UserAuthority;
 import com.Teletubbies.Apollo.jwt.repository.ApolloUserTokenRepository;
+import com.Teletubbies.Apollo.jwt.repository.UserAuthorityRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ApolloUserDetailsService implements UserDetailsService {
     private final ApolloUserTokenRepository apolloUserTokenRepository;
+    private final UserAuthorityRepository userAuthorityRepository;
     private final PasswordEncoder passwordEncoder;
     @Override
     public UserDetails loadUserByUsername(String userLogin) throws UsernameNotFoundException {
@@ -35,12 +38,13 @@ public class ApolloUserDetailsService implements UserDetailsService {
         log.info("createUser 진입 성공");
         if (!apolloUserToken.isActivated())
             throw new RuntimeException(id + "-> 활성화 되지 않은 사용자입니다.");
+        List<UserAuthority> allByApolloUserToken = userAuthorityRepository.findAllByApolloUserToken(apolloUserToken);
 
-        List<GrantedAuthority> grantedAuthorities = apolloUserToken.getAuthorities().stream()
-                .map(authority -> new SimpleGrantedAuthority(authority.getAuthorityName()))
+        List<GrantedAuthority> grantedAuthorities = allByApolloUserToken.stream()
+                .map(authority -> new SimpleGrantedAuthority(authority.getAuthority().getAuthorityName()))
                 .collect(Collectors.toList());
         for (GrantedAuthority grantedAuthority : grantedAuthorities) {
-            System.out.println(grantedAuthority.getAuthority());
+            log.info("해당 사용자의 권한 목록: "+grantedAuthority.getAuthority());
         }
         log.info("권한 정보 가져오기 성공");
         return new User(apolloUserToken.getUserLogin(), passwordEncoder.encode(apolloUserToken.getUserId()), grantedAuthorities);
