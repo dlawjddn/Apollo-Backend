@@ -1,5 +1,6 @@
 package com.Teletubbies.Apollo.deploy.controller;
 
+import com.Teletubbies.Apollo.deploy.dto.GetStackRequestDto;
 import com.Teletubbies.Apollo.deploy.dto.StackRequestDto;
 import com.Teletubbies.Apollo.deploy.service.AWSCloudFormationClientService;
 import com.Teletubbies.Apollo.deploy.service.AWSCloudFormationServerService;
@@ -60,6 +61,16 @@ public class AWSCloudFormationController {
         String repoName = stackRequestDto.getRepoName();
         awsCloudFormationServerService.deleteServerStack(repoName);
         return ResponseEntity.ok("Server stack is deleted successfully");
+    }
+
+    @Operation(summary = "Stack 조회", description = "사용자의 이름을 기반으로 client를 생성한 stack을 조회한다.")
+    @GetMapping("/cloudformation/{userLogin}")
+    public ResponseEntity<String> getClientStack(@PathVariable String userLogin,
+                                                 @RequestBody GetStackRequestDto getStackRequestDto) {
+        String stackName = getStackRequestDto.getRepoName();
+        String type = getStackRequestDto.getStackType();
+
+        return ResponseEntity.ok("ok");
     }
 
     @Operation(summary = "Stack 삭제", description = "요청한 이름의 Stack을 삭제한다.")
