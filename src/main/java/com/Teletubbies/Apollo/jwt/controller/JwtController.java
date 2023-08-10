@@ -4,6 +4,8 @@ import com.Teletubbies.Apollo.auth.domain.ApolloUser;
 import com.Teletubbies.Apollo.auth.service.UserService;
 import com.Teletubbies.Apollo.jwt.dto.UserLoginRequestDto;
 import com.Teletubbies.Apollo.jwt.service.JwtService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,9 +20,11 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
+@Tag(name = "Jwt Controller", description = "jwt 이용 login api")
 public class JwtController {
     private final UserService userService;
     private final JwtService jwtService;
+    @Operation(summary = "jwt login api", description = "회원 가입을 한 상태여야 진행이 가능함, username = login, password = userId")
     @PostMapping("/login/user")
     public HashMap<String, Object> login(@RequestBody UserLoginRequestDto userLoginRequestDto){
         String userLogin = userLoginRequestDto.getUserLogin();
