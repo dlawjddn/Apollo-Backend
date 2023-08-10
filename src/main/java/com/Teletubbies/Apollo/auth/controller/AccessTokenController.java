@@ -2,6 +2,8 @@ package com.Teletubbies.Apollo.auth.controller;
 
 import com.Teletubbies.Apollo.auth.dto.MemberInfoResponse;
 import com.Teletubbies.Apollo.auth.service.OAuthService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -11,8 +13,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
+@Tag(name = "Access-Token Controller", description = "Gtihub OAuth 관련 API")
 public class AccessTokenController {
     private final OAuthService oAuthService;
+    @Operation(summary = "Github server에서 실제 유저 정보 받아오기", description = "client에서 넘겨준 code 이용해서 access-token 받아오기, access-token 이용해서 실제 유저 정보 가져오기")
     @PostMapping("/authenticate")
     public ResponseEntity<?> getUsersInfo(@RequestParam String code) {
         try {
