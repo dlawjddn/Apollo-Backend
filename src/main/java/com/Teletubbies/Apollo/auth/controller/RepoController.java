@@ -27,9 +27,9 @@ public class RepoController {
     private final UserService userService;
     private final RepoService repoService;
     @Operation(summary = "사용자의 repository 목록 저장", description = "사용자의 로그인 값을 이용해서 레포지토리 받아온 뒤, 저장")
-    @GetMapping("/repository/list/{userLogin}")
-    public List<RepoInfoJsonResponse> saveRepoList(@PathVariable String userLogin) throws ParseException {
-        ApolloUser findApolloUser = userService.getUserByLogin(userLogin);
+    @GetMapping("/repository/list/{userId}")
+    public List<RepoInfoJsonResponse> saveRepoList(@PathVariable Long userId) throws ParseException {
+        ApolloUser findApolloUser = userService.getUserById(userId);
         List<RepoInfoJsonResponse> repoInfoJsonResponses = repoService.saveRepo(findApolloUser);
         return repoInfoJsonResponses;
     }

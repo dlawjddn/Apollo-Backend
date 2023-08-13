@@ -1,7 +1,7 @@
 package com.Teletubbies.Apollo.auth.controller;
 
 import com.Teletubbies.Apollo.auth.domain.ApolloUser;
-import com.Teletubbies.Apollo.auth.dto.MemberInfoResponse;
+import com.Teletubbies.Apollo.auth.dto.SaveUserRequest;
 import com.Teletubbies.Apollo.auth.service.UserService;
 import com.Teletubbies.Apollo.jwt.domain.ApolloUserToken;
 import com.Teletubbies.Apollo.jwt.service.AuthorityService;
@@ -22,8 +22,8 @@ public class UserController {
     private final JwtService jwtService;
     @Operation(summary = "User 저장", description = "User 관련 정보 받아서 저장, jwt 인증 기초 과정도 여기서 수행")
     @PostMapping("/save/user")
-    public String saveUser(@RequestBody MemberInfoResponse memberInfoResponse){
-        ApolloUser savedUser = userService.saveUser(memberInfoResponse);
+    public String saveUser(@RequestBody SaveUserRequest saveUserRequest){
+        ApolloUser savedUser = userService.saveUser(saveUserRequest);
         log.info("Controller: 유저 저장 완료");
         ApolloUserToken apolloUserToken = jwtService.toMakeTokenSaveObj(savedUser.getLogin(), savedUser.getId().toString());
         if (!authorityService.existAuthority(1L)){
