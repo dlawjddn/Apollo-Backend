@@ -1,6 +1,6 @@
 package com.Teletubbies.Apollo.auth.domain;
 
-import com.Teletubbies.Apollo.auth.dto.MemberInfoResponse;
+import com.Teletubbies.Apollo.auth.dto.SaveUserRequest;
 import com.Teletubbies.Apollo.credential.domain.Credential;
 import com.Teletubbies.Apollo.deploy.domain.Service;
 import jakarta.persistence.*;
@@ -30,11 +30,11 @@ public class ApolloUser {
     @OneToMany(mappedBy = "apolloUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Service> services;
 
-    public ApolloUser(MemberInfoResponse memberInfoResponse) {
-        this.id = memberInfoResponse.getOauthId();
-        this.login = memberInfoResponse.getLogin();
-        this.name = memberInfoResponse.getUsername();
-        this.email = memberInfoResponse.getEmail();
-        this.profileUrl = memberInfoResponse.getProfileUrl();
+    public ApolloUser(SaveUserRequest saveUserRequest) {
+        this.id = saveUserRequest.getOauthId();
+        this.login = saveUserRequest.getLogin();
+        this.name = saveUserRequest.getUsername();
+        this.email = saveUserRequest.getEmail();
+        this.profileUrl = saveUserRequest.getProfileUrl();
     }
 }

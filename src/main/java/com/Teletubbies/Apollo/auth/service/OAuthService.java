@@ -2,7 +2,7 @@ package com.Teletubbies.Apollo.auth.service;
 
 import com.Teletubbies.Apollo.auth.dto.AccessTokenRequest;
 import com.Teletubbies.Apollo.auth.dto.AccessTokenResponse;
-import com.Teletubbies.Apollo.auth.dto.MemberInfoResponse;
+import com.Teletubbies.Apollo.auth.dto.SaveUserRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,9 +10,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 @Slf4j
@@ -37,7 +35,7 @@ public class OAuthService {
         ).getAccessToken();
     }
 
-    public ResponseEntity<MemberInfoResponse> getUserInfo(String accessToken) {
+    public ResponseEntity<SaveUserRequest> getUserInfo(String accessToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Accept", "application/vnd.github+json");
         headers.setBearerAuth(accessToken);
@@ -48,7 +46,7 @@ public class OAuthService {
                 MEMBER_INFO_URL,
                 HttpMethod.GET,
                 request,
-                MemberInfoResponse.class
+                SaveUserRequest.class
         );
     }
 }

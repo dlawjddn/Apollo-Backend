@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class MemberInfoResponse {
+public class SaveUserRequest {
     @JsonProperty("id")
     private Long oauthId;
 
@@ -23,7 +23,7 @@ public class MemberInfoResponse {
     @JsonProperty("avatar_url")
     private String profileUrl;
 
-    public ApolloUser changeDTOtoObj(MemberInfoResponse memberInfoResponse) {
-        return new ApolloUser(memberInfoResponse);
+    public ApolloUser changeDTOtoObj(SaveUserRequest saveUserRequest) {
+        return new ApolloUser(saveUserRequest);
     }
 }

@@ -1,6 +1,6 @@
 package com.Teletubbies.Apollo.auth.controller;
 
-import com.Teletubbies.Apollo.auth.dto.MemberInfoResponse;
+import com.Teletubbies.Apollo.auth.dto.SaveUserRequest;
 import com.Teletubbies.Apollo.auth.service.OAuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,12 +25,12 @@ public class AccessTokenController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("access-token 발행 실패");
             }
             log.info("access-token 발행 성공: " + accessToken);
-            MemberInfoResponse memberInfoResponse = oAuthService.getUserInfo(accessToken).getBody();
-            if (memberInfoResponse == null) {
+            SaveUserRequest saveUserRequest = oAuthService.getUserInfo(accessToken).getBody();
+            if (saveUserRequest == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("유저 정보 객체 dto 변환 실패");
             }
-            log.info("유저 정보 객체 dto 변환 성공: " + memberInfoResponse);
-            return ResponseEntity.status(HttpStatus.OK).body(memberInfoResponse);
+            log.info("유저 정보 객체 dto 변환 성공: " + saveUserRequest);
+            return ResponseEntity.status(HttpStatus.OK).body(saveUserRequest);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("유저 정보 객체 dto 변환 실패: " + e.getMessage());
         }
