@@ -3,20 +3,14 @@ package com.Teletubbies.Apollo.board.controller;
 import com.Teletubbies.Apollo.auth.domain.ApolloUser;
 import com.Teletubbies.Apollo.auth.service.UserService;
 import com.Teletubbies.Apollo.board.domain.Post;
-import com.Teletubbies.Apollo.board.dto.SavePostRequest;
+import com.Teletubbies.Apollo.board.dto.request.SavePostRequest;
 import com.Teletubbies.Apollo.board.service.PostService;
-import com.Teletubbies.Apollo.board.domain.PostWithTag;
 import com.Teletubbies.Apollo.board.domain.Tag;
-import com.Teletubbies.Apollo.board.dto.SavePostRequest;
-import com.Teletubbies.Apollo.board.service.PostService;
 import com.Teletubbies.Apollo.board.service.PostWithTagService;
 import com.Teletubbies.Apollo.board.service.TagService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -29,8 +23,8 @@ public class PostController {
     private final TagService tagService;
     private final PostWithTagService postWithTagService;
     private final UserService userService;
-    @PostMapping("/register/board")
-    public List<Tag> registerPost(@RequestBody SavePostRequest request){
+    @PostMapping("/board")
+    public Post registerPost(@RequestBody SavePostRequest request){
         log.info("컨트롤러 단 진입 완료");
         ApolloUser findUser = userService.getUserById(request.getUserId());
 
@@ -45,6 +39,10 @@ public class PostController {
         }
         log.info("태그와 게시물 연관 저장 완료");
 
-        return tags;
+        return post;
+    }
+    @PatchMapping("/board")
+    public void updatePost(){
+
     }
 }
