@@ -23,11 +23,11 @@ public class Post {
     private Date createAt;
     private Date updateAt;
 
-    public Post(ApolloUser apolloUser, String title, String content, Date createAt) {
+    public Post(ApolloUser apolloUser, String title, String content) {
         this.apolloUser = apolloUser;
         this.title = title;
         this.content = content;
-        this.createAt = createAt;
-        this.updateAt = createAt;
+        this.createAt = new Date();
+        this.updateAt = new Date();
     }
 }
