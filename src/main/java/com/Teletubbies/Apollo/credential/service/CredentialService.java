@@ -17,4 +17,8 @@ public class CredentialService {
     public Credential saveCredential(Credential credential) {
         return credentialRepository.save(credential);
     }
+
+    public void deleteCredential(Credential credential) {
+        credentialRepository.delete(credential);
+    }
 }
