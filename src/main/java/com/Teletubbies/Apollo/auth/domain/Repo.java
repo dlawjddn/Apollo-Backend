@@ -1,7 +1,7 @@
 package com.Teletubbies.Apollo.auth.domain;
 
 import com.Teletubbies.Apollo.auth.dto.RepoInfoResponse;
-import com.Teletubbies.Apollo.deploy.domain.Service;
+import com.Teletubbies.Apollo.deploy.domain.ApolloDeployService;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,8 +20,7 @@ public class Repo {
     private String repoUrl;
     private String ownerLogin;
     @OneToOne(mappedBy = "repo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Service service;
-
+    private ApolloDeployService service;
 
     public Repo(RepoInfoResponse response) {
         this.id = response.getId();

@@ -3,7 +3,7 @@ package com.Teletubbies.Apollo.auth.domain;
 import com.Teletubbies.Apollo.auth.dto.SaveUserRequest;
 import com.Teletubbies.Apollo.board.domain.Post;
 import com.Teletubbies.Apollo.credential.domain.Credential;
-import com.Teletubbies.Apollo.deploy.domain.Service;
+import com.Teletubbies.Apollo.deploy.domain.ApolloDeployService;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,7 +31,7 @@ public class ApolloUser {
     @OneToOne(mappedBy = "apolloUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Credential credential;
     @OneToMany(mappedBy = "apolloUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Service> services;
+    private List<ApolloDeployService> services;
 
     public ApolloUser(SaveUserRequest saveUserRequest) {
         this.id = saveUserRequest.getOauthId();
