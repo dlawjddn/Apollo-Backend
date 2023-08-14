@@ -1,4 +1,4 @@
-package com.Teletubbies.Apollo.board.dto;
+package com.Teletubbies.Apollo.board.dto.request;
 
 import lombok.Data;
 
