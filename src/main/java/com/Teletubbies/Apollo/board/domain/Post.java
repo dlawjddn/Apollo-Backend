@@ -30,4 +30,10 @@ public class Post {
         this.createAt = new Date();
         this.updateAt = new Date();
     }
+    public Post updatePost(String title, String content){
+        this.title = title;
+        this.content = content;
+        this.updateAt = new Date();
+        return this;
+    }
 }
