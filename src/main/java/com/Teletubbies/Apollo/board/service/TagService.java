@@ -7,18 +7,21 @@ import com.Teletubbies.Apollo.board.repository.PostWithTagRepository;
 import com.Teletubbies.Apollo.board.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.querydsl.QSort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class TagService {
     private final TagRepository tagRepository;
+    private final PostWithTagRepository postWithTagRepository;
     @Transactional
     public List<Tag> saveTag(List<String> tagNames){
         List<Tag> tags = tagNames.stream()
@@ -32,5 +35,9 @@ public class TagService {
                 })
                 .collect(Collectors.toList());
         return tags;
+    }
+    @Transactional
+    public void updateTag(Post post, List<String> destTagNames){
+
     }
 }
