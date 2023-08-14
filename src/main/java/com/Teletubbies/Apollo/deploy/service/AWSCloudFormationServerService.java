@@ -32,8 +32,7 @@ public class AWSCloudFormationServerService {
     }
 
     public void createServerStack(String repoName) {
-//        final String templateURL = "https://s3.amazonaws.com/apollo-script/api-build-test.yaml";
-        final String templateURL = "https://s3.amazonaws.com/apollo-script/api-test.yaml";
+        final String templateURL = "https://s3.amazonaws.com/apollo-script/api/cloudformation.yaml";
         try {
             Repo repo = repoRepository.findByRepoName(repoName)
                     .orElseThrow(() -> new ApolloException(NOT_FOUND_REPO_ERROR, "Repo 정보가 없습니다."));
