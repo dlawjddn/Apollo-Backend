@@ -6,8 +6,11 @@ import com.Teletubbies.Apollo.credential.domain.Credential;
 import com.Teletubbies.Apollo.credential.exception.CredentialException;
 import com.Teletubbies.Apollo.credential.repository.CredentialRepository;
 import com.Teletubbies.Apollo.deploy.component.AwsClientComponent;
+import com.Teletubbies.Apollo.deploy.domain.ApolloDeployService;
+import com.Teletubbies.Apollo.deploy.repository.AwsServiceRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
 import software.amazon.awssdk.services.cloudformation.model.*;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -24,16 +27,19 @@ public class AWSCloudFormationClientService {
     private final S3Client s3Client;
     private final RepoRepository repoRepository;
     private final CredentialRepository credentialRepository;
+    private final AwsServiceRepository awsServiceRepository;
 
-    public AWSCloudFormationClientService(AwsClientComponent awsClientComponent, RepoRepository repoRepository, CredentialRepository credentialRepository) {
+    public AWSCloudFormationClientService(AwsClientComponent awsClientComponent, RepoRepository repoRepository, CredentialRepository credentialRepository, AwsServiceRepository awsServiceRepository) {
         this.cloudFormationClient = awsClientComponent.createCFClient();
         this.s3Client = awsClientComponent.createS3Client();
         this.repoRepository = repoRepository;
         this.credentialRepository = credentialRepository;
+        this.awsServiceRepository = awsServiceRepository;
     }
 
+    @Transactional
     public String createClientStack(String repoName) {
-        final String templateURL = "https://s3.amazonaws.com/apollo-script/client-build-test.yaml";
+        final String templateURL = "https://s3.amazonaws.com/apollo-script/client/cloudformation.yaml";
         try {
             Optional<Repo> repoInfoResponse = repoRepository.findByRepoName(repoName);
 
@@ -130,6 +136,10 @@ public class AWSCloudFormationClientService {
         } catch (Exception e) {
             log.info("스택 삭제중에 에러가 발생했습니다.: " + e.getMessage());
         }
+    }
+
+    public void saveService(ApolloDeployService apolloDeployService) {
+        awsServiceRepository.save(apolloDeployService);
     }
 
     public String getBucketName(String stackName) {

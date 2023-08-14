@@ -3,11 +3,15 @@ package com.Teletubbies.Apollo.deploy.domain;
 import com.Teletubbies.Apollo.auth.domain.ApolloUser;
 import com.Teletubbies.Apollo.auth.domain.Repo;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Date;
 
 @Entity
-public class Service {
+@Getter @Setter
+@Table(name = "service")
+public class ApolloDeployService {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
