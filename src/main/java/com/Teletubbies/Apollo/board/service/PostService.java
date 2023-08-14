@@ -17,6 +17,6 @@ public class PostService {
     private final PostRepository postRepository;
     public Post savePost(ApolloUser apolloUser, SavePostRequest savePostRequest){
         log.info("서비스 단 진입 완료");
-        return postRepository.save(new Post(apolloUser, savePostRequest.getTitle(), savePostRequest.getContent(), new Date()));
+        return postRepository.save(new Post(apolloUser, savePostRequest.getTitle(), savePostRequest.getContent()));
     }
 }
