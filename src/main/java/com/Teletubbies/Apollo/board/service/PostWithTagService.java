@@ -9,13 +9,23 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class PostWithTagService {
     private final PostWithTagRepository postWithTagRepository;
     @Transactional
-    public void savePostWithTag(Post post, Tag tag){
-        postWithTagRepository.save(new PostWithTag(post, tag));
+    public Long savePostWithTag(Post post, Tag tag){
+        return postWithTagRepository.save(new PostWithTag(post, tag)).getId();
     }
+    public List<PostWithTag> findPostWithTagByPost(Post post){
+        return postWithTagRepository.findAllByPost(post);
+    }
+    @Transactional
+    public void deletePostWithTag(PostWithTag postWithTag){
+        postWithTagRepository.delete(postWithTag);
+    }
+
 }
