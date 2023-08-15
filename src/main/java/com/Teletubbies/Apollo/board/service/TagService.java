@@ -21,9 +21,12 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class TagService {
     private final TagRepository tagRepository;
-    private final PostWithTagRepository postWithTagRepository;
     @Transactional
-    public List<Tag> saveTag(List<String> tagNames){
+    public Tag saveTag(String tagName){
+        return tagRepository.save(new Tag(tagName));
+    }
+    @Transactional
+    public List<Tag> saveTags(List<String> tagNames){
         List<Tag> tags = tagNames.stream()
                 .map(tagName -> {
                     if (!tagRepository.existsByName(tagName)) {
@@ -36,8 +39,11 @@ public class TagService {
                 .collect(Collectors.toList());
         return tags;
     }
-    @Transactional
-    public void updateTag(Post post, List<String> destTagNames){
-
+    public boolean existsByTagName(String tagName){
+        return tagRepository.existsByName(tagName);
+    }
+    public Tag findByTagName(String tagName){
+        return tagRepository.findByName(tagName)
+                .orElseThrow(() -> new IllegalArgumentException("해당 이름에 맞는 태그가 없습니다."));
     }
 }
