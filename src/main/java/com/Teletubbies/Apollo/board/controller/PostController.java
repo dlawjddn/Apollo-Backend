@@ -6,6 +6,7 @@ import com.Teletubbies.Apollo.board.domain.Post;
 import com.Teletubbies.Apollo.board.domain.PostWithTag;
 import com.Teletubbies.Apollo.board.dto.request.SavePostRequest;
 import com.Teletubbies.Apollo.board.dto.request.UpdatePostRequest;
+import com.Teletubbies.Apollo.board.dto.response.FindPostResponse;
 import com.Teletubbies.Apollo.board.dto.response.SavePostResponse;
 import com.Teletubbies.Apollo.board.dto.response.UpdatePostResponse;
 import com.Teletubbies.Apollo.board.service.PostService;
@@ -42,6 +43,10 @@ public class PostController {
         log.info("태그와 게시물 연관 저장 완료");
 
         return new SavePostResponse(post.getId(), findUser.getId());
+    }
+    @GetMapping("/board/title/{titleName}")
+    public List<FindPostResponse> findSimilarPostByTitle(@PathVariable String titleName){
+        return postService.findSimilarPostByTitle(titleName);
     }
     @PatchMapping("/board")
     public UpdatePostResponse updatePost(@RequestBody UpdatePostRequest request){
