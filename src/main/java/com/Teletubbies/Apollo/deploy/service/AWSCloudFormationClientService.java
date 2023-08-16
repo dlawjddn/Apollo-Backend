@@ -45,15 +45,11 @@ public class AWSCloudFormationClientService {
 
             if (repoInfoResponse.isPresent()) {
                 Repo repo = repoInfoResponse.get();
-                log.info("Repo 정보는 다음과 같습니다: " + repo.getRepoName());
-                log.info("repo url: " + repo.getRepoUrl());
-                log.info("repo owner login: " + repo.getOwnerLogin());
                 Long userId = repo.getApolloUser().getId();
 
                 Credential credential = credentialRepository.findByApolloUserId(userId)
                         .orElseThrow(() -> new CredentialException(CREDENTIAL_NOT_FOUND_ERROR, "Credential 정보가 없습니다."));
 
-                log.info("Credential 정보는 다음과 같습니다: " + credential.getGithubOAuthToken());
                 CreateStackRequest stackRequest = CreateStackRequest.builder()
                         .templateURL(templateURL)
                         .stackName(repoName)
@@ -61,7 +57,8 @@ public class AWSCloudFormationClientService {
                                 Parameter.builder().parameterKey("RepoName").parameterValue(repo.getRepoName()).build(),
                                 Parameter.builder().parameterKey("UserLogin").parameterValue(repo.getOwnerLogin()).build(),
                                 Parameter.builder().parameterKey("RepoLocation").parameterValue(repo.getRepoUrl()).build(),
-                                Parameter.builder().parameterKey("GithubToken").parameterValue(credential.getGithubOAuthToken()).build()
+                                Parameter.builder().parameterKey("GithubToken").parameterValue(credential.getGithubOAuthToken()).build(),
+                                Parameter.builder().parameterKey("region").parameterValue(credential.getRegion()).build()
                         )
                         .capabilitiesWithStrings("CAPABILITY_IAM")
                         .build();
@@ -81,9 +78,8 @@ public class AWSCloudFormationClientService {
                         return getS3BucketUrl(repoName, "ap-northeast-2");
                     } else if (stackStatus.endsWith("FAILED") || stackStatus.equals("ROLLBACK_COMPLETE")) {
                         log.info("스택생성이 비정상적으로 종료되었습니다");
-                        break; // Break on failure
+                        break;
                     }
-                    // Wait for a bit before checking again
                     Thread.sleep(10000); // 10 seconds
                 }
             }
