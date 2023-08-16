@@ -46,4 +46,8 @@ public class TagService {
         return tagRepository.findByName(tagName)
                 .orElseThrow(() -> new IllegalArgumentException("해당 이름에 맞는 태그가 없습니다."));
     }
+    @Transactional
+    public void deleteTag(Tag deleteTag){
+        tagRepository.delete(deleteTag);
+    }
 }

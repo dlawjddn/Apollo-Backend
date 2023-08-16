@@ -26,6 +26,7 @@ public class PostWithTagService {
     public List<PostWithTag> findPostWithTagByPost(Post post){
         return postWithTagRepository.findAllByPost(post);
     }
+    public List<PostWithTag> findPostWithTagByTag(Tag tag){return postWithTagRepository.findAllByTag(tag);}
     public List<Tag> findSaveTagInUpdate(List<String> originTagNames, List<String> newTagNames){
         List<Tag> saveTags = new ArrayList<>();
         for (String newTagName : newTagNames) {
