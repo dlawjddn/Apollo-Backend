@@ -1,9 +1,7 @@
 package com.Teletubbies.Apollo.deploy.controller;
 
 import com.Teletubbies.Apollo.auth.domain.ApolloUser;
-import com.Teletubbies.Apollo.auth.repository.UserRepository;
 import com.Teletubbies.Apollo.auth.service.UserService;
-import com.Teletubbies.Apollo.credential.domain.Credential;
 import com.Teletubbies.Apollo.deploy.domain.ApolloDeployService;
 import com.Teletubbies.Apollo.deploy.dto.GetStackRequestDto;
 import com.Teletubbies.Apollo.deploy.dto.StackRequestDto;
