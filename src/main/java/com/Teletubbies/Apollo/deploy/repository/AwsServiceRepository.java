@@ -1,4 +1,7 @@
 package com.Teletubbies.Apollo.deploy.repository;
 
-public class AwsServiceRepository {
+import com.Teletubbies.Apollo.deploy.domain.ApolloDeployService;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface AwsServiceRepository extends JpaRepository<ApolloDeployService, Long> {
 }

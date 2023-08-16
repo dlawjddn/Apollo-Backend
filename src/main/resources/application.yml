@@ -27,6 +27,7 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.type: TRACE
     org.springframework.security: DEBUG
+    web: debug
 
 security:
   oauth:

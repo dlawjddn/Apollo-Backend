@@ -1,7 +1,7 @@
 package com.Teletubbies.Apollo.auth.service;
 
 import com.Teletubbies.Apollo.auth.domain.ApolloUser;
-import com.Teletubbies.Apollo.auth.dto.MemberInfoResponse;
+import com.Teletubbies.Apollo.auth.dto.SaveUserRequest;
 import com.Teletubbies.Apollo.auth.repository.UserRepository;
 import com.Teletubbies.Apollo.core.exception.ApolloException;
 import lombok.RequiredArgsConstructor;
@@ -20,12 +20,12 @@ import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.NOT_FOUND_US
 public class UserService {
     private final UserRepository userRepository;
     @Transactional
-    public ApolloUser saveUser(MemberInfoResponse memberInfoResponse) {
-        ApolloUser apolloUserToSave = memberInfoResponse.changeDTOtoObj(memberInfoResponse);
+    public ApolloUser saveUser(SaveUserRequest saveUserRequest) {
+        ApolloUser apolloUserToSave = saveUserRequest.changeDTOtoObj(saveUserRequest);
         if (userRepository.existsById(apolloUserToSave.getId()))
             throw new ApolloException(DUPLICATED_USER_ERROR, "이미 존재하는 회원입니다");
-        ApolloUser savedApolloUser = userRepository.save(memberInfoResponse.changeDTOtoObj(memberInfoResponse));
-        log.info("유저 저장 완료");
+        ApolloUser savedApolloUser = userRepository.save(saveUserRequest.changeDTOtoObj(saveUserRequest));
+        log.info("Service: 유저 저장 완료");
         return savedApolloUser;
     }
     public ApolloUser getUserById(Long id){
