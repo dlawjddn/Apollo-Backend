@@ -127,7 +127,7 @@ public class AWSCloudFormationServerService {
 
     public void deleteS3Bucket(String bucketName) {
         try {
-            emptyS3Bucket(bucketName);
+            emptyS3BucketV2(bucketName);
             DeleteBucketRequest deleteBucketRequest = DeleteBucketRequest.builder().bucket(bucketName).build();
             s3Client.deleteBucket(deleteBucketRequest);
         } catch (Exception e) {
@@ -136,13 +136,71 @@ public class AWSCloudFormationServerService {
     }
 
     public void emptyS3Bucket(String bucketName) {
-        ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder().bucket(bucketName).build();
+        ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder()
+                .bucket(bucketName)
+                .build();
         ListObjectsV2Response listObjectsV2Response;
 
         do {
             listObjectsV2Response = s3Client.listObjectsV2(listObjectsV2Request);
             for (S3Object s3Object : listObjectsV2Response.contents()) {
-                DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder().bucket(bucketName).key(s3Object.key()).build();
+                DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(s3Object.key())
+                        .build();
+                s3Client.deleteObject(deleteObjectRequest);
+            }
+            listObjectsV2Request = listObjectsV2Request.toBuilder().continuationToken(listObjectsV2Response.nextContinuationToken()).build();
+        } while (listObjectsV2Response.isTruncated());
+    }
+
+    public void emptyS3BucketV2(String bucketName) {
+        ListObjectVersionsRequest listObjectVersionsRequest = ListObjectVersionsRequest.builder()
+                .bucket(bucketName)
+                .build();
+        ListObjectVersionsResponse listObjectVersionsResponse;
+
+        do {
+            listObjectVersionsResponse = s3Client.listObjectVersions(listObjectVersionsRequest);
+
+            for (ObjectVersion objectVersion : listObjectVersionsResponse.versions()) {
+                DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(objectVersion.key())
+                        .versionId(objectVersion.versionId())
+                        .build();
+                s3Client.deleteObject(deleteObjectRequest);
+            }
+
+            for (DeleteMarkerEntry deleteMarkerEntry: listObjectVersionsResponse.deleteMarkers()) {
+                DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(deleteMarkerEntry.key())
+                        .versionId(deleteMarkerEntry.versionId())
+                        .build();
+                s3Client.deleteObject(deleteObjectRequest);
+            }
+
+            listObjectVersionsRequest = listObjectVersionsRequest
+                    .toBuilder()
+                    .keyMarker(listObjectVersionsResponse.nextKeyMarker())
+                    .versionIdMarker(listObjectVersionsResponse.nextVersionIdMarker())
+                    .build();
+        } while (listObjectVersionsResponse.isTruncated());
+
+        ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request
+                .builder()
+                .bucket(bucketName)
+                .build();
+        ListObjectsV2Response listObjectsV2Response;
+
+        do {
+            listObjectsV2Response = s3Client.listObjectsV2(listObjectsV2Request);
+            for (S3Object s3Object: listObjectsV2Response.contents()) {
+                DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(s3Object.key())
+                        .build();
                 s3Client.deleteObject(deleteObjectRequest);
             }
             listObjectsV2Request = listObjectsV2Request.toBuilder().continuationToken(listObjectsV2Response.nextContinuationToken()).build();
