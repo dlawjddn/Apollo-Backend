@@ -170,6 +170,7 @@ public class AWSCloudFormationServerService {
         try {
             DeleteRepositoryRequest deleteRepositoryRequest = DeleteRepositoryRequest.builder()
                     .repositoryName(repositoryName)
+                    .force(true)
                     .build();
             ecrClient.deleteRepository(deleteRepositoryRequest);
             log.info("다음 리포지토리를 정상적으로 삭제하였습니다: " + repositoryName);
