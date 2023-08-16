@@ -16,8 +16,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
@@ -67,6 +65,11 @@ public class PostController {
 
         postWithTagService.updatingPostWithOldTag(updatedPost, deleteTagInUpdate);
         log.info("게시글에 더 이상 필요없는 태그 연관관계 삭제 완료");
+
+        deleteTagInUpdate.forEach(deleteTag -> {
+                            if (postWithTagService.findPostWithTagByTag(deleteTag).size() == 0)
+                                tagService.deleteTag(deleteTag);}
+        ); log.info("게시글과 연관 관계가 전혀 없는 태그 삭제 완료");
 
         postWithTagService.updatingPostWithNewTag(updatedPost, saveTagInUpdate);
         log.info("게시글에 새로 필요한 태그 연관관계 저장");
