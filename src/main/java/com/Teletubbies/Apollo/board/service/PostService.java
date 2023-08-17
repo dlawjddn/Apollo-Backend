@@ -42,6 +42,16 @@ public class PostService {
                 .collect(Collectors.toList());
 
     }
+    public List<FindPostResponse> findSimilarPostByTitleOrContent(String searchString){
+        List<Post> findPosts = postRepository.findByContentContainingIgnoreCaseOrTitleContainingIgnoreCase(searchString, searchString);
+        return findPosts.stream()
+                .map(findPost -> new FindPostResponse(
+                        findPost.getId(),
+                        findPost.getApolloUser().getId(),
+                        findPost.getTitle(),
+                        findPost.getContent()))
+                .collect(Collectors.toList());
+    }
     //update
     @Transactional
     public Post updatePost(Post post, String title, String content){
