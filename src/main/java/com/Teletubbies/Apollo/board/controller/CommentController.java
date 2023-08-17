@@ -2,8 +2,10 @@ package com.Teletubbies.Apollo.board.controller;
 
 import com.Teletubbies.Apollo.board.domain.Comment;
 import com.Teletubbies.Apollo.board.dto.comment.request.SaveCommentRequest;
+import com.Teletubbies.Apollo.board.dto.comment.request.UpdateCommentRequest;
 import com.Teletubbies.Apollo.board.dto.comment.response.MyCommentResponse;
 import com.Teletubbies.Apollo.board.dto.comment.response.SaveCommentResponse;
+import com.Teletubbies.Apollo.board.dto.comment.response.UpdateCommentResponse;
 import com.Teletubbies.Apollo.board.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,5 +38,11 @@ public class CommentController {
                         myComment.getContent(),
                         myComment.getUpdateAt()))
                 .toList();
+    }
+    @PatchMapping("/comment")
+    public UpdateCommentResponse updateComment(@RequestBody UpdateCommentRequest request){
+        Comment updateComment = commentService.updateComment(request);
+        log.info("댓글 수정 완료");
+        return new UpdateCommentResponse(updateComment.getId(), updateComment.getContent());
     }
 }
