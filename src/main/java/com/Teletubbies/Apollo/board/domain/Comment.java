@@ -31,4 +31,9 @@ public class Comment {
         this.createAt = new Date();
         this.updateAt = new Date();
     }
+    public Comment updateComment(String content){
+        this.content = content;
+        this.updateAt = new Date();
+        return this;
+    }
 }
