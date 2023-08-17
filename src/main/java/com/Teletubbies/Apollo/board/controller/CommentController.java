@@ -2,14 +2,14 @@ package com.Teletubbies.Apollo.board.controller;
 
 import com.Teletubbies.Apollo.board.domain.Comment;
 import com.Teletubbies.Apollo.board.dto.comment.request.SaveCommentRequest;
+import com.Teletubbies.Apollo.board.dto.comment.response.MyCommentResponse;
 import com.Teletubbies.Apollo.board.dto.comment.response.SaveCommentResponse;
 import com.Teletubbies.Apollo.board.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,6 +20,21 @@ public class CommentController {
     @PostMapping("/comment")
     public SaveCommentResponse saveComment(@RequestBody SaveCommentRequest request){
         Comment newComment = commentService.saveComment(request);
-        return new SaveCommentResponse(newComment.getApolloUser().getId(), newComment.getPost().getId(), newComment.getId(), newComment.getContent(), newComment.getCreateAt());
+        return new SaveCommentResponse(
+                newComment.getApolloUser().getId(),
+                newComment.getPost().getId(),
+                newComment.getId(),
+                newComment.getContent(),
+                newComment.getCreateAt());
+    }
+    @GetMapping("/comment/{userId}")
+    public List<MyCommentResponse> findMyComments(@PathVariable Long userId){
+         return commentService.findAllMyComments(userId).stream()
+                .map(myComment -> new MyCommentResponse(
+                        myComment.getPost().getId(),
+                        myComment.getPost().getTitle(),
+                        myComment.getContent(),
+                        myComment.getUpdateAt()))
+                .toList();
     }
 }
