@@ -2,13 +2,17 @@ package com.Teletubbies.Apollo.board.controller;
 
 import com.Teletubbies.Apollo.auth.domain.ApolloUser;
 import com.Teletubbies.Apollo.auth.service.UserService;
+import com.Teletubbies.Apollo.board.domain.Comment;
 import com.Teletubbies.Apollo.board.domain.Post;
 import com.Teletubbies.Apollo.board.domain.PostWithTag;
+import com.Teletubbies.Apollo.board.dto.comment.response.CommentInPostResponse;
 import com.Teletubbies.Apollo.board.dto.post.request.SavePostRequest;
 import com.Teletubbies.Apollo.board.dto.post.request.UpdatePostRequest;
 import com.Teletubbies.Apollo.board.dto.post.response.FindPostResponse;
+import com.Teletubbies.Apollo.board.dto.post.response.PostDetailResponse;
 import com.Teletubbies.Apollo.board.dto.post.response.SavePostResponse;
 import com.Teletubbies.Apollo.board.dto.post.response.UpdatePostResponse;
+import com.Teletubbies.Apollo.board.service.CommentService;
 import com.Teletubbies.Apollo.board.service.PostService;
 import com.Teletubbies.Apollo.board.domain.Tag;
 import com.Teletubbies.Apollo.board.service.PostWithTagService;
@@ -28,6 +32,7 @@ public class PostController {
     private final TagService tagService;
     private final PostWithTagService postWithTagService;
     private final UserService userService;
+    private final CommentService commentService;
     @PostMapping("/board")
     public SavePostResponse registerPost(@RequestBody SavePostRequest request){
         log.info("컨트롤러 단 진입 완료");
@@ -43,6 +48,16 @@ public class PostController {
         log.info("태그와 게시물 연관 저장 완료");
 
         return new SavePostResponse(post.getId(), findUser.getId());
+    }
+    @GetMapping("/board/{postId}")
+    public PostDetailResponse findPostDetails(@PathVariable Long postId){
+        Post findPost = postService.findPostById(postId);
+        FindPostResponse postResponse = new FindPostResponse(findPost.getApolloUser().getId(), findPost.getId(), findPost.getTitle(), findPost.getContent());
+        List<Comment> findComments = commentService.findAllCommentByPost(findPost);
+        List<CommentInPostResponse> commentResponses = findComments.stream()
+                .map(findComment -> new CommentInPostResponse(findComment.getId(), findComment.getApolloUser().getId(), findComment.getContent(), findComment.getCreateAt()))
+                .toList();
+        return new PostDetailResponse(postResponse, commentResponses);
     }
     @GetMapping("/board/title/{titleName}")
     public List<FindPostResponse> findSimilarPostByTitle(@PathVariable String titleName){
