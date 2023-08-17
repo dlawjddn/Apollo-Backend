@@ -48,6 +48,10 @@ public class PostController {
     public List<FindPostResponse> findSimilarPostByTitle(@PathVariable String titleName){
         return postService.findSimilarPostByTitle(titleName);
     }
+    @GetMapping("board/titleOrContent/{searchString}")
+    public List<FindPostResponse> findSimilarPostByTitleOrContent(@PathVariable String searchString){
+        return postService.findSimilarPostByTitleOrContent(searchString);
+    }
     @PatchMapping("/board")
     public UpdatePostResponse updatePost(@RequestBody UpdatePostRequest request){
         Post findPost = postService.findPostById(request.getPostId());
