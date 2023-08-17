@@ -29,4 +29,8 @@ public class CommentService {
     public List<Comment> findAllCommentByPost(Post post){
         return commentRepository.findALlByPost(post);
     }
+    public List<Comment> findAllMyComments(Long userId){
+        ApolloUser findUser = userService.getUserById(userId);
+        return commentRepository.findAllByApolloUser(findUser);
+    }
 }
