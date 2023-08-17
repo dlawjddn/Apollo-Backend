@@ -2,10 +2,8 @@ package com.Teletubbies.Apollo.board.service;
 
 import com.Teletubbies.Apollo.auth.domain.ApolloUser;
 import com.Teletubbies.Apollo.board.domain.Post;
-import com.Teletubbies.Apollo.board.dto.request.SavePostRequest;
-import com.Teletubbies.Apollo.board.dto.request.UpdatePostRequest;
-import com.Teletubbies.Apollo.board.dto.response.FindPostResponse;
-import com.Teletubbies.Apollo.board.dto.response.UpdatePostResponse;
+import com.Teletubbies.Apollo.board.dto.post.request.SavePostRequest;
+import com.Teletubbies.Apollo.board.dto.post.response.FindPostResponse;
 import com.Teletubbies.Apollo.board.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
