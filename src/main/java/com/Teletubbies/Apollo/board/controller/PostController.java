@@ -49,6 +49,10 @@ public class PostController {
 
         return new SavePostResponse(post.getId(), findUser.getId());
     }
+    @GetMapping("/board")
+    public List<FindPostResponse> findAllPosts(){
+        return postService.findAllPosts();
+    }
     @GetMapping("/board/{postId}")
     public PostDetailResponse findPostDetails(@PathVariable Long postId){
         Post findPost = postService.findPostById(postId);
