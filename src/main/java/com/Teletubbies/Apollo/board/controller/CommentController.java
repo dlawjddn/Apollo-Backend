@@ -1,6 +1,7 @@
 package com.Teletubbies.Apollo.board.controller;
 
 import com.Teletubbies.Apollo.board.domain.Comment;
+import com.Teletubbies.Apollo.board.dto.comment.request.DeleteCommentRequest;
 import com.Teletubbies.Apollo.board.dto.comment.request.SaveCommentRequest;
 import com.Teletubbies.Apollo.board.dto.comment.request.UpdateCommentRequest;
 import com.Teletubbies.Apollo.board.dto.comment.response.MyCommentResponse;
@@ -44,5 +45,9 @@ public class CommentController {
         Comment updateComment = commentService.updateComment(request);
         log.info("댓글 수정 완료");
         return new UpdateCommentResponse(updateComment.getId(), updateComment.getContent());
+    }
+    @DeleteMapping("/comment")
+    public String deleteComment(@RequestBody DeleteCommentRequest request){
+        return commentService.deleteComment(request);
     }
 }

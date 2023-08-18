@@ -4,6 +4,7 @@ import com.Teletubbies.Apollo.auth.domain.ApolloUser;
 import com.Teletubbies.Apollo.auth.service.UserService;
 import com.Teletubbies.Apollo.board.domain.Comment;
 import com.Teletubbies.Apollo.board.domain.Post;
+import com.Teletubbies.Apollo.board.dto.comment.request.DeleteCommentRequest;
 import com.Teletubbies.Apollo.board.dto.comment.request.SaveCommentRequest;
 import com.Teletubbies.Apollo.board.dto.comment.request.UpdateCommentRequest;
 import com.Teletubbies.Apollo.board.repository.CommentRepository;
@@ -43,5 +44,16 @@ public class CommentService {
             throw new IllegalArgumentException("댓글 작성자와 수정자가 일치하지 않습니다.");
         log.info("작성자 수정자 일치 여부 파악 성공");
         return findComment.updateComment(request.getContent());
+    }
+    @Transactional
+    public String deleteComment(DeleteCommentRequest request){
+        Comment findComment = commentRepository.findById(request.getCommentId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글입니다."));
+        if (!findComment.getApolloUser().getId().equals(request.getUserId()))
+            throw new IllegalArgumentException("댓글 작성자와 수정자가 일치하지 않습니다.");
+        log.info("작성자 수정자 일치 여부 파악 성공");
+        commentRepository.delete(findComment);
+        log.info("댓글 삭제 완료");
+        return "ok";
     }
 }
