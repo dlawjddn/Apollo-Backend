@@ -29,6 +29,16 @@ public class PostService {
         return postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글 아이디입니다."));
     }
+    public List<FindPostResponse> findAllPosts(){
+        return postRepository.findAll().stream()
+                .map(findPost -> new FindPostResponse(
+                        findPost.getApolloUser().getId(),
+                        findPost.getId(),
+                        findPost.getTitle(),
+                        findPost.getContent()))
+                .toList();
+
+    }
     public List<FindPostResponse> findSimilarPostByTitle(String title){
         List<Post> findPosts = postRepository.findByTitleContainingIgnoreCase(title);
         return findPosts.stream()
