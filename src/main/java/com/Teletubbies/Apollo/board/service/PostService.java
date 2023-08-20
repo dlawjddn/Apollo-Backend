@@ -2,6 +2,7 @@ package com.Teletubbies.Apollo.board.service;
 
 import com.Teletubbies.Apollo.auth.domain.ApolloUser;
 import com.Teletubbies.Apollo.board.domain.Post;
+import com.Teletubbies.Apollo.board.dto.post.request.DeletePostRequest;
 import com.Teletubbies.Apollo.board.dto.post.request.SavePostRequest;
 import com.Teletubbies.Apollo.board.dto.post.response.FindPostResponse;
 import com.Teletubbies.Apollo.board.repository.PostRepository;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
+    private final PostWithTagService postWithTagService;
     //create
     @Transactional
     public Post savePost(ApolloUser apolloUser, SavePostRequest savePostRequest){
@@ -64,5 +66,17 @@ public class PostService {
     @Transactional
     public Post updatePost(Post post, String title, String content){
         return post.updatePost(title, content);
+    }
+    @Transactional
+    public String deletePost(DeletePostRequest request){
+        Post findPost = findPostById(request.getPostId());
+        if (!findPost.getApolloUser().getId().equals(request.getUserId()))
+            throw new IllegalArgumentException("작성자와 수정자는 동일한 사람이여야 합니다.");
+        postWithTagService.findPostWithTagByPost(findPost).stream()
+                        .forEach(postWithTag -> postWithTagService.deletePostWithTag(postWithTag));
+        log.info("연관관계 삭제 완료");
+        //postRepository.delete(findPost);
+        log.info("게시글 삭제 완료");
+        return "ok";
     }
 }
