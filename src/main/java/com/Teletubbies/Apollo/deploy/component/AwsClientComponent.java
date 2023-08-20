@@ -7,6 +7,7 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
+import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ecr.EcrClient;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -47,6 +48,14 @@ public class AwsClientComponent {
     public EcrClient createEcrClient() {
         AwsBasicCredentials awsCred = AwsBasicCredentials.create(awsServiceDto.getAccessKey(), awsServiceDto.getSecretKey());
         return EcrClient.builder()
+                .region(Region.of(awsServiceDto.getRegion()))
+                .credentialsProvider(StaticCredentialsProvider.create(awsCred))
+                .build();
+    }
+
+    public CloudWatchClient createCloudWatchClient() {
+        AwsBasicCredentials awsCred = AwsBasicCredentials.create(awsServiceDto.getAccessKey(), awsServiceDto.getSecretKey());
+        return CloudWatchClient.builder()
                 .region(Region.of(awsServiceDto.getRegion()))
                 .credentialsProvider(StaticCredentialsProvider.create(awsCred))
                 .build();
