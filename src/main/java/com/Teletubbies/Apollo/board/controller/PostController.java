@@ -6,6 +6,7 @@ import com.Teletubbies.Apollo.board.domain.Comment;
 import com.Teletubbies.Apollo.board.domain.Post;
 import com.Teletubbies.Apollo.board.domain.PostWithTag;
 import com.Teletubbies.Apollo.board.dto.comment.response.CommentInPostResponse;
+import com.Teletubbies.Apollo.board.dto.post.request.DeletePostRequest;
 import com.Teletubbies.Apollo.board.dto.post.request.SavePostRequest;
 import com.Teletubbies.Apollo.board.dto.post.request.UpdatePostRequest;
 import com.Teletubbies.Apollo.board.dto.post.response.FindPostResponse;
@@ -103,5 +104,9 @@ public class PostController {
         log.info("게시글에 새로 필요한 태그 연관관계 저장");
 
         return new UpdatePostResponse(updatedPost.getId());
+    }
+    @DeleteMapping("/board")
+    public String deletePost(@RequestBody DeletePostRequest request){
+        return postService.deletePost(request);
     }
 }
