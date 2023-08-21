@@ -71,16 +71,13 @@ public class AWSCloudFormationClientService {
     }
 
     private Output getOutput(String repoName) {
-        DescribeStacksRequest describeStacksRequest = DescribeStacksRequest
-                .builder()
-                .stackName(repoName)
-                .build();
+        DescribeStacksRequest describeStacksRequest = DescribeStacksRequest.builder().stackName(repoName).build();
         cloudFormationClient.waiter().waitUntilStackCreateComplete(describeStacksRequest);
         DescribeStacksResponse describeStacksResponse = cloudFormationClient.describeStacks(describeStacksRequest);
         return describeStacksResponse.stacks().get(0).outputs().get(0);
     }
 
-    private static CreateStackRequest getCreateStackRequest(String repoName, String templateURL, Repo repo, Credential credential) {
+    private CreateStackRequest getCreateStackRequest(String repoName, String templateURL, Repo repo, Credential credential) {
         return CreateStackRequest
                 .builder()
                 .templateURL(templateURL)
@@ -96,7 +93,8 @@ public class AWSCloudFormationClientService {
                 .build();
     }
 
-    public void deleteClientStack(String stackName) {
+    public void deleteClientStack(Long userId, String stackName) {
+        ApolloUser user = userService.getUserById(userId);
         String bucketName = getBucketName(stackName);
         if (bucketName != null) {
             deleteS3Bucket(bucketName);
@@ -104,7 +102,7 @@ public class AWSCloudFormationClientService {
         } else {
             log.info("버킷이 존재하지 않습니다.");
         }
-        ApolloDeployService apolloDeployService = awsServiceRepository.findByStackName(stackName);
+        ApolloDeployService apolloDeployService = awsServiceRepository.findByApolloUserAndStackName(user, stackName);
         if (apolloDeployService != null) {
             awsServiceRepository.delete(apolloDeployService);
         }
