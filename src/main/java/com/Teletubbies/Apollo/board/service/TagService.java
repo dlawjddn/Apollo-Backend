@@ -3,6 +3,7 @@ package com.Teletubbies.Apollo.board.service;
 import com.Teletubbies.Apollo.board.domain.Post;
 import com.Teletubbies.Apollo.board.domain.PostWithTag;
 import com.Teletubbies.Apollo.board.domain.Tag;
+import com.Teletubbies.Apollo.board.dto.tag.ConvertTag;
 import com.Teletubbies.Apollo.board.repository.PostWithTagRepository;
 import com.Teletubbies.Apollo.board.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +48,11 @@ public class TagService {
     public Tag findByTagName(String tagName){
         return tagRepository.findByName(tagName)
                 .orElseThrow(() -> new IllegalArgumentException("해당 이름에 맞는 태그가 없습니다."));
+    }
+    public List<ConvertTag> findAllTag(){
+        return tagRepository.findAll().stream()
+                .map(tag -> new ConvertTag(tag.getId(), tag.getName()))
+                .toList();
     }
     @Transactional
     public void deleteTag(Tag deleteTag){
