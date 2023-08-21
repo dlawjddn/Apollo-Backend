@@ -1,9 +1,6 @@
 package com.Teletubbies.Apollo.credential.controller;
 
-import com.Teletubbies.Apollo.auth.domain.ApolloUser;
 import com.Teletubbies.Apollo.auth.service.UserService;
-import com.Teletubbies.Apollo.credential.domain.Credential;
-import com.Teletubbies.Apollo.credential.dto.CredentialDto;
 import com.Teletubbies.Apollo.credential.dto.reponse.DeleteCredentialResponse;
 import com.Teletubbies.Apollo.credential.dto.reponse.GetCredentialResponse;
 import com.Teletubbies.Apollo.credential.dto.reponse.PatchCredentialResponse;
@@ -15,7 +12,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
