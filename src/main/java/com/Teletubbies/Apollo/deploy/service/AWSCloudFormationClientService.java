@@ -27,16 +27,14 @@ import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.NOT_FOUND_RE
 @Service
 @Slf4j
 public class AWSCloudFormationClientService {
-    private final CloudFormationClient cloudFormationClient;
-    private final S3Client s3Client;
+    private final AwsClientComponent awsClientComponent;
     private final RepoRepository repoRepository;
     private final CredentialRepository credentialRepository;
     private final AwsServiceRepository awsServiceRepository;
     private final UserService userService;
 
     public AWSCloudFormationClientService(AwsClientComponent awsClientComponent, RepoRepository repoRepository, CredentialRepository credentialRepository, AwsServiceRepository awsServiceRepository, UserService userService) {
-        this.cloudFormationClient = awsClientComponent.createCFClient();
-        this.s3Client = awsClientComponent.createS3Client();
+        this.awsClientComponent = awsClientComponent;
         this.repoRepository = repoRepository;
         this.credentialRepository = credentialRepository;
         this.awsServiceRepository = awsServiceRepository;
@@ -45,8 +43,9 @@ public class AWSCloudFormationClientService {
 
     @Transactional
     public PostClientDeployResponse saveService(Long userId, PostClientDeployRequest request) {
+        CloudFormationClient cfClient = awsClientComponent.createCFClient(userId);
         String repoName = request.getRepoName();
-        String EndPoint = createClientStack(repoName);
+        String EndPoint = createClientStack(cfClient, repoName);
         ApolloUser user = userService.getUserById(userId);
         Repo repo = repoRepository.findByRepoName(repoName)
                 .orElseThrow(() -> new DeploymentException(NOT_FOUND_REPO_ERROR, "해당 레포가 존재하지 않습니다."));
@@ -55,7 +54,7 @@ public class AWSCloudFormationClientService {
         return new PostClientDeployResponse(repoName, "client", EndPoint);
     }
 
-    public String createClientStack(String repoName) {
+    public String createClientStack(CloudFormationClient cfClient, String repoName) {
         final String templateURL = "https://s3.amazonaws.com/apollo-script/client/cloudformation.yaml";
         Repo repo = repoRepository.findByRepoName(repoName)
                 .orElseThrow(() -> new DeploymentException(NOT_FOUND_REPO_ERROR, "해당 레포가 존재하지 않습니다."));
@@ -65,15 +64,15 @@ public class AWSCloudFormationClientService {
                 .orElseThrow(() -> new CredentialException(CREDENTIAL_NOT_FOUND_ERROR, "Credential 정보가 없습니다."));
 
         CreateStackRequest stackRequest = getCreateStackRequest(repoName, templateURL, repo, credential);
-        cloudFormationClient.createStack(stackRequest);
-        Output output = getOutput(repoName);
+        cfClient.createStack(stackRequest);
+        Output output = getOutput(cfClient, repoName);
         return output.outputValue();
     }
 
-    private Output getOutput(String repoName) {
+    private Output getOutput(CloudFormationClient cfClient, String repoName) {
         DescribeStacksRequest describeStacksRequest = DescribeStacksRequest.builder().stackName(repoName).build();
-        cloudFormationClient.waiter().waitUntilStackCreateComplete(describeStacksRequest);
-        DescribeStacksResponse describeStacksResponse = cloudFormationClient.describeStacks(describeStacksRequest);
+        cfClient.waiter().waitUntilStackCreateComplete(describeStacksRequest);
+        DescribeStacksResponse describeStacksResponse = cfClient.describeStacks(describeStacksRequest);
         return describeStacksResponse.stacks().get(0).outputs().get(0);
     }
 
@@ -94,11 +93,13 @@ public class AWSCloudFormationClientService {
     }
 
     public void deleteClientStack(Long userId, String stackName) {
+        CloudFormationClient cfClient = awsClientComponent.createCFClient(userId);
+        S3Client s3Client = awsClientComponent.createS3Client(userId);
         ApolloUser user = userService.getUserById(userId);
-        String bucketName = getBucketName(stackName);
+        String bucketName = getBucketName(cfClient, stackName);
         if (bucketName != null) {
-            deleteS3Bucket(bucketName);
-            deleteCloudFormationStack(stackName);
+            deleteS3Bucket(s3Client, bucketName);
+            deleteCloudFormationStack(cfClient, stackName);
         } else {
             log.info("버킷이 존재하지 않습니다.");
         }
@@ -108,9 +109,9 @@ public class AWSCloudFormationClientService {
         }
     }
 
-    public void deleteS3Bucket(String bucketName) {
+    public void deleteS3Bucket(S3Client s3Client, String bucketName) {
         try {
-            emptyS3Bucket(bucketName);
+            emptyS3Bucket(s3Client, bucketName);
             DeleteBucketRequest deleteBucketRequest = DeleteBucketRequest.builder().bucket(bucketName).build();
             s3Client.deleteBucket(deleteBucketRequest);
             log.info("Delete bucket: " + bucketName + " successfully");
@@ -119,7 +120,7 @@ public class AWSCloudFormationClientService {
         }
     }
 
-    public void emptyS3Bucket(String bucketName) {
+    public void emptyS3Bucket(S3Client s3Client, String bucketName) {
         ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder().bucket(bucketName).build();
         ListObjectsV2Response listObjectsV2Response;
 
@@ -133,22 +134,22 @@ public class AWSCloudFormationClientService {
         } while (listObjectsV2Response.isTruncated());
     }
 
-    public void deleteCloudFormationStack(String stackName) {
+    public void deleteCloudFormationStack(CloudFormationClient cfClient, String stackName) {
         try {
             DeleteStackRequest deleteStackRequest = DeleteStackRequest.builder().stackName(stackName).build();
-            cloudFormationClient.deleteStack(deleteStackRequest);
+            cfClient.deleteStack(deleteStackRequest);
             log.info("Delete stack: " + stackName + " successfully");
         } catch (Exception e) {
             log.info("스택 삭제중에 에러가 발생했습니다.: " + e.getMessage());
         }
     }
 
-    public String getBucketName(String stackName) {
+    public String getBucketName(CloudFormationClient cfClient, String stackName) {
         try {
             DescribeStackResourcesRequest request = DescribeStackResourcesRequest.builder()
                     .stackName(stackName)
                     .build();
-            DescribeStackResourcesResponse response = cloudFormationClient.describeStackResources(request);
+            DescribeStackResourcesResponse response = cfClient.describeStackResources(request);
             for (StackResource stackResource : response.stackResources()) {
                 if ("AWS::S3::Bucket".equals(stackResource.resourceType())) {
                     return stackResource.physicalResourceId();
