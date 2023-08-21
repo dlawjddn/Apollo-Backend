@@ -1,17 +1,11 @@
 package com.Teletubbies.Apollo.deploy.controller;
 
-import com.Teletubbies.Apollo.auth.domain.ApolloUser;
 import com.Teletubbies.Apollo.auth.service.UserService;
-import com.Teletubbies.Apollo.deploy.domain.ApolloDeployService;
-import com.Teletubbies.Apollo.deploy.dto.GetStackRequestDto;
-import com.Teletubbies.Apollo.deploy.dto.StackRequestDto;
+import com.Teletubbies.Apollo.deploy.dto.request.GetDeployStackRequest;
 import com.Teletubbies.Apollo.deploy.dto.request.DeleteClientDeployRequest;
 import com.Teletubbies.Apollo.deploy.dto.request.PostClientDeployRequest;
 import com.Teletubbies.Apollo.deploy.dto.request.PostServerDeployRequest;
-import com.Teletubbies.Apollo.deploy.dto.response.DeleteClientDeployResponse;
-import com.Teletubbies.Apollo.deploy.dto.response.DeleteServerDeployResponse;
-import com.Teletubbies.Apollo.deploy.dto.response.PostClientDeployResponse;
-import com.Teletubbies.Apollo.deploy.dto.response.PostServerDeployResponse;
+import com.Teletubbies.Apollo.deploy.dto.response.*;
 import com.Teletubbies.Apollo.deploy.service.AWSCloudFormationClientService;
 import com.Teletubbies.Apollo.deploy.service.AWSCloudFormationServerService;
 import com.Teletubbies.Apollo.deploy.service.AWSCloudFormationService;
@@ -21,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -78,14 +74,12 @@ public class AWSCloudFormationController {
         return response;
     }
 
-
-    @Operation(summary = "Stack 조회", description = "사용자의 이름을 기반으로 client를 생성한 stack을 조회한다.")
-    @GetMapping("/cloudformation/{userId}")
-    public ResponseEntity<String> getClientStack(@PathVariable Long userId,
-                                                 @RequestBody GetStackRequestDto getStackRequestDto) {
-        String stackName = getStackRequestDto.getRepoName();
-        String type = getStackRequestDto.getStackType();
-
-        return ResponseEntity.ok("ok");
-    }
+//    @Operation(summary = "Stack 조회", description = "사용자의 이름을 기반으로 client를 생성한 stack을 조회한다.")
+//    @GetMapping("/cloudformation/{userId}")
+//    public ResponseEntity<String> getClientStack(@PathVariable Long userId,
+//                                                 @RequestBody GetDeployStackRequest request) {
+//        List<GetDeployStackResponse> stacks = awsCloudFormationService.getDeployStacks(userId, request);
+//
+//        return ResponseEntity.ok("ok");
+//    }
 }

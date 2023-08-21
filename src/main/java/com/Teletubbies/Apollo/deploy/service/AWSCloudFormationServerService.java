@@ -19,26 +19,26 @@ import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
 import software.amazon.awssdk.services.cloudformation.model.*;
 import software.amazon.awssdk.services.ecr.EcrClient;
 import software.amazon.awssdk.services.ecr.model.DeleteRepositoryRequest;
+import software.amazon.awssdk.services.elasticloadbalancingv2.ElasticLoadBalancingV2Client;
+import software.amazon.awssdk.services.elasticloadbalancingv2.model.*;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
+
+import java.util.List;
 
 import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.NOT_FOUND_REPO_ERROR;
 
 @Slf4j
 @Service
 public class AWSCloudFormationServerService {
-    private final CloudFormationClient cloudFormationClient;
-    private final S3Client s3Client;
-    private final EcrClient ecrClient;
+    private final AwsClientComponent awsClientComponent;
     private final RepoRepository repoRepository;
     private final CredentialRepository credentialRepository;
     private final AwsServiceRepository awsServiceRepository;
     private final UserService userService;
 
     public AWSCloudFormationServerService(AwsClientComponent awsClientComponent, RepoRepository repoRepository, CredentialRepository credentialRepository, AwsServiceRepository awsServiceRepository, UserService userService) {
-        this.cloudFormationClient = awsClientComponent.createCFClient();
-        this.s3Client = awsClientComponent.createS3Client();
-        this.ecrClient = awsClientComponent.createEcrClient();
+        this.awsClientComponent = awsClientComponent;
         this.repoRepository = repoRepository;
         this.credentialRepository = credentialRepository;
         this.awsServiceRepository = awsServiceRepository;
@@ -46,8 +46,9 @@ public class AWSCloudFormationServerService {
     }
 
     public PostServerDeployResponse saveService(Long userId, PostServerDeployRequest request) {
+        CloudFormationClient cfClient = awsClientComponent.createCFClient(userId);
         String repoName = request.getRepoName();
-        String EndPoint = createServerStack(repoName);
+        String EndPoint = createServerStack(cfClient, repoName);
         ApolloUser user = userService.getUserById(userId);
         Repo repo = repoRepository.findByRepoName(repoName)
                 .orElseThrow(() -> new ApolloException(NOT_FOUND_REPO_ERROR, "Repo 정보가 없습니다."));
@@ -56,7 +57,7 @@ public class AWSCloudFormationServerService {
         return new PostServerDeployResponse(repoName, "server", EndPoint);
     }
 
-    public String createServerStack(String repoName) {
+    public String createServerStack(CloudFormationClient cfClient, String repoName) {
         final String templateURL = "https://s3.amazonaws.com/apollo-script/api/cloudformation.yaml";
         Repo repo = repoRepository.findByRepoName(repoName)
                 .orElseThrow(() -> new ApolloException(NOT_FOUND_REPO_ERROR, "Repo 정보가 없습니다."));
@@ -65,15 +66,15 @@ public class AWSCloudFormationServerService {
                 .orElseThrow(() -> new ApolloException(CustomErrorCode.CREDENTIAL_NOT_FOUND_ERROR, "Credential 정보가 없습니다."));
 
         CreateStackRequest stackRequest = getCreateStackRequest(repoName, templateURL, repo, credential);
-        cloudFormationClient.createStack(stackRequest);
-        Output output = getOutput(repoName);
+        cfClient.createStack(stackRequest);
+        Output output = getOutput(cfClient, repoName);
         return output.outputValue();
     }
 
-    private Output getOutput(String repoName) {
+    private Output getOutput(CloudFormationClient cfClient, String repoName) {
         DescribeStacksRequest describeStacksRequest = DescribeStacksRequest.builder().stackName(repoName).build();
-        cloudFormationClient.waiter().waitUntilStackCreateComplete(describeStacksRequest);
-        DescribeStacksResponse describeStacksResponse = cloudFormationClient.describeStacks(describeStacksRequest);
+        cfClient.waiter().waitUntilStackCreateComplete(describeStacksRequest);
+        DescribeStacksResponse describeStacksResponse = cfClient.describeStacks(describeStacksRequest);
         return describeStacksResponse.stacks().get(0).outputs().get(0);
     }
 
@@ -96,20 +97,31 @@ public class AWSCloudFormationServerService {
     }
 
     public void deleteServerStack(Long userId, String stackName) {
+        CloudFormationClient cfClient = awsClientComponent.createCFClient(userId);
+        ElasticLoadBalancingV2Client elbClient = awsClientComponent.createELBClient(userId);
+        EcrClient ecrClient = awsClientComponent.createEcrClient(userId);
+        S3Client s3Client = awsClientComponent.createS3Client(userId);
         ApolloUser user = userService.getUserById(userId);
-        String ecrRepositoryName = getECRRepository(stackName);
-        String bucketName = getBucketName(stackName);
+        String ecrRepositoryName = getECRRepository(cfClient, stackName);
+        String bucketName = getBucketName(cfClient, stackName);
+        String loadBalancerArn = getLoadBalancerArnFromStack(cfClient, stackName);
+
+        if (loadBalancerArn != null) {
+            deleteTargetGroupsAssociatedWithStack(elbClient, loadBalancerArn);
+        } else {
+            log.info("해당하는 로드밸런서가 존재하지 않습니다.");
+        }
 
         if (ecrRepositoryName != null) {
-            deleteECRRepository(ecrRepositoryName);
+            deleteECRRepository(ecrClient, ecrRepositoryName);
         } else {
             log.info("해당하는 ECR 리포지토리가 존재하지 않습니다.");
         }
 
         if (bucketName != null) {
-            deleteS3Bucket(bucketName);
+            deleteS3Bucket(s3Client, bucketName);
             log.info("버킷 삭제 완료");
-            deleteCloudFormationStack(stackName);
+            deleteCloudFormationStack(cfClient, stackName);
             log.info("스택 삭제 완료");
         } else {
             log.info("버킷이 존재하지 않습니다.");
@@ -120,12 +132,12 @@ public class AWSCloudFormationServerService {
         }
     }
 
-    private String getBucketName(String stackName) {
+    private String getBucketName(CloudFormationClient cfClient, String stackName) {
         try {
             DescribeStackResourcesRequest request = DescribeStackResourcesRequest.builder()
                     .stackName(stackName)
                     .build();
-            DescribeStackResourcesResponse response = cloudFormationClient.describeStackResources(request);
+            DescribeStackResourcesResponse response = cfClient.describeStackResources(request);
             for (StackResource stackResource : response.stackResources()) {
                 if ("AWS::S3::Bucket".equals(stackResource.resourceType())) {
                     log.info("스택에서 해당하는 버킷을 찾았습니다.");
@@ -138,9 +150,9 @@ public class AWSCloudFormationServerService {
         return null;
     }
 
-    private void deleteS3Bucket(String bucketName) {
+    private void deleteS3Bucket(S3Client s3Client, String bucketName) {
         try {
-            emptyS3Bucket(bucketName);
+            emptyS3Bucket(s3Client, bucketName);
             DeleteBucketRequest deleteBucketRequest = DeleteBucketRequest.builder().bucket(bucketName).build();
             s3Client.deleteBucket(deleteBucketRequest);
         } catch (Exception e) {
@@ -148,7 +160,7 @@ public class AWSCloudFormationServerService {
         }
     }
 
-    private void emptyS3Bucket(String bucketName) {
+    private void emptyS3Bucket(S3Client s3Client, String bucketName) {
         ListObjectVersionsRequest listObjectVersionsRequest = ListObjectVersionsRequest.builder()
                 .bucket(bucketName)
                 .build();
@@ -201,12 +213,12 @@ public class AWSCloudFormationServerService {
         } while (listObjectsV2Response.isTruncated());
     }
 
-    private String getECRRepository(String stackName) {
+    private String getECRRepository(CloudFormationClient cfClient, String stackName) {
         try {
             DescribeStackResourcesRequest request = DescribeStackResourcesRequest.builder()
                     .stackName(stackName)
                     .build();
-            DescribeStackResourcesResponse response = cloudFormationClient.describeStackResources(request);
+            DescribeStackResourcesResponse response = cfClient.describeStackResources(request);
             for (StackResource stackResource: response.stackResources()) {
                 if ("AWS::ECR::Repository".equals(stackResource.resourceType())) {
                     return stackResource.physicalResourceId();
@@ -218,7 +230,7 @@ public class AWSCloudFormationServerService {
         return null;
     }
 
-    private void deleteECRRepository(String repositoryName) {
+    private void deleteECRRepository(EcrClient ecrClient, String repositoryName) {
         try {
             DeleteRepositoryRequest deleteRepositoryRequest = DeleteRepositoryRequest.builder()
                     .repositoryName(repositoryName)
@@ -231,12 +243,50 @@ public class AWSCloudFormationServerService {
         }
     }
 
-    private void deleteCloudFormationStack(String stackName) {
+    private void deleteCloudFormationStack(CloudFormationClient cfClient, String stackName) {
         try {
             DeleteStackRequest deleteStackRequest = DeleteStackRequest.builder().stackName(stackName).build();
-            cloudFormationClient.deleteStack(deleteStackRequest);
+            cfClient.deleteStack(deleteStackRequest);
         } catch (Exception e) {
             log.info("스택 삭제중에 에러가 발생했습니다.: " + e.getMessage());
         }
+    }
+
+    private void deleteTargetGroupsAssociatedWithStack(ElasticLoadBalancingV2Client elbClient, String loadBalancerArn) {
+
+        DescribeListenersRequest describeListenersRequest = DescribeListenersRequest.builder()
+                .loadBalancerArn(loadBalancerArn)
+                .build();
+        DescribeListenersResponse describeListenersResponse = elbClient.describeListeners(describeListenersRequest);
+
+        for (Listener listener : describeListenersResponse.listeners()) {
+            String targetGroupArn = listener.defaultActions().get(0).targetGroupArn();
+
+            DeleteListenerRequest deleteListenerRequest = DeleteListenerRequest.builder()
+                    .listenerArn(listener.listenerArn())
+                    .build();
+            elbClient.deleteListener(deleteListenerRequest);
+            log.info("Listener " + listener.listenerArn() + " deleted successfully.");
+
+            DeleteTargetGroupRequest deleteTargetGroupRequest = DeleteTargetGroupRequest.builder()
+                    .targetGroupArn(targetGroupArn)
+                    .build();
+            elbClient.deleteTargetGroup(deleteTargetGroupRequest);
+            log.info("Target Group " + targetGroupArn + " deleted successfully.");
+        }
+    }
+
+    private String getLoadBalancerArnFromStack(CloudFormationClient cfClient, String stackName) {
+        DescribeStackResourcesRequest request = DescribeStackResourcesRequest.builder()
+                .stackName(stackName)
+                .build();
+        DescribeStackResourcesResponse response = cfClient.describeStackResources(request);
+
+        for (StackResource stackResource : response.stackResources()) {
+            if ("AWS::ElasticLoadBalancingV2::LoadBalancer".equals(stackResource.resourceType())) {
+                return stackResource.physicalResourceId();
+            }
+        }
+        return null;
     }
 }

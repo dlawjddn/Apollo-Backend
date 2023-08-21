@@ -1,4 +1,4 @@
-package com.Teletubbies.Apollo.deploy.dto;
+package com.Teletubbies.Apollo.deploy.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -9,9 +9,7 @@ import lombok.Setter;
 @Getter @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class GetStackRequestDto {
-    @JsonProperty("repoName")
-    private String repoName;
-    @JsonProperty("stackType")
-    private String stackType;
+public class GetDeployStackRequest {
+    @JsonProperty("stackName")
+    private String stackName;
 }
