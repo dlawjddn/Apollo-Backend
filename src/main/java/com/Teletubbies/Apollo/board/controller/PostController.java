@@ -13,6 +13,7 @@ import com.Teletubbies.Apollo.board.dto.post.response.FindPostResponse;
 import com.Teletubbies.Apollo.board.dto.post.response.PostDetailResponse;
 import com.Teletubbies.Apollo.board.dto.post.response.SavePostResponse;
 import com.Teletubbies.Apollo.board.dto.post.response.UpdatePostResponse;
+import com.Teletubbies.Apollo.board.dto.tag.ConvertTag;
 import com.Teletubbies.Apollo.board.service.CommentService;
 import com.Teletubbies.Apollo.board.service.PostService;
 import com.Teletubbies.Apollo.board.domain.Tag;
@@ -54,15 +55,28 @@ public class PostController {
     public List<FindPostResponse> findAllPosts(){
         return postService.findAllPosts();
     }
+    @GetMapping("/tag")
+    public List<ConvertTag> findAllTags() {return tagService.findAllTag();}
     @GetMapping("/board/{postId}")
     public PostDetailResponse findPostDetails(@PathVariable Long postId){
         Post findPost = postService.findPostById(postId);
+        log.info("게시글 조회 완료");
+
+        List<ConvertTag> tagOfPost = postWithTagService.findPostWithTagByPost(postService.findPostById(postId)).stream()
+                .map(postWithTag -> new ConvertTag(postWithTag.getTag().getId(), postWithTag.getTag().getName()))
+                .toList();
+        log.info("게시글의 태그 조회 완료, 태그 dto 변환 완료");
+
         FindPostResponse postResponse = new FindPostResponse(findPost.getApolloUser().getId(), findPost.getId(), findPost.getTitle(), findPost.getContent());
+        log.info("게시글 dto 변환 완료");
+
         List<Comment> findComments = commentService.findAllCommentByPost(findPost);
+        log.info("게시글의 댓글 조회 완료");
         List<CommentInPostResponse> commentResponses = findComments.stream()
                 .map(findComment -> new CommentInPostResponse(findComment.getId(), findComment.getApolloUser().getId(), findComment.getContent(), findComment.getCreateAt()))
                 .toList();
-        return new PostDetailResponse(postResponse, commentResponses);
+        log.info("게시글의 댓글 dto 변환 완료");
+        return new PostDetailResponse(postResponse, commentResponses, tagOfPost);
     }
     @GetMapping("/board/title/{titleName}")
     public List<FindPostResponse> findSimilarPostByTitle(@PathVariable String titleName){
