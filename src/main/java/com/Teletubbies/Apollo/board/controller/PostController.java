@@ -55,6 +55,8 @@ public class PostController {
     public List<FindPostResponse> findAllPosts(){
         return postService.findAllPosts();
     }
+    @GetMapping("/tag")
+    public List<ConvertTag> findAllTags() {return tagService.findAllTag();}
     @GetMapping("/board/{postId}")
     public PostDetailResponse findPostDetails(@PathVariable Long postId){
         Post findPost = postService.findPostById(postId);
