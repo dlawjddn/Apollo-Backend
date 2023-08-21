@@ -37,14 +37,12 @@ public class AWSCloudFormationServerService {
 
     public void createServerStack(String repoName) {
         final String templateURL = "https://s3.amazonaws.com/apollo-script/api/cloudformation.yaml";
+        Repo repo = repoRepository.findByRepoName(repoName)
+                .orElseThrow(() -> new ApolloException(NOT_FOUND_REPO_ERROR, "Repo 정보가 없습니다."));
+        Long userId = repo.getApolloUser().getId();
+        Credential credential = credentialRepository.findByApolloUserId(userId)
+                .orElseThrow(() -> new ApolloException(CustomErrorCode.CREDENTIAL_NOT_FOUND_ERROR, "Credential 정보가 없습니다."));
         try {
-            Repo repo = repoRepository.findByRepoName(repoName)
-                    .orElseThrow(() -> new ApolloException(NOT_FOUND_REPO_ERROR, "Repo 정보가 없습니다."));
-            Long userId = repo.getApolloUser().getId();
-
-            Credential credential = credentialRepository.findByApolloUserId(userId)
-                    .orElseThrow(() -> new ApolloException(CustomErrorCode.CREDENTIAL_NOT_FOUND_ERROR, "Credential 정보가 없습니다."));
-
             CreateStackRequest stackRequest = CreateStackRequest.builder()
                     .templateURL(templateURL)
                     .stackName(repoName)
@@ -59,29 +57,8 @@ public class AWSCloudFormationServerService {
                     .capabilitiesWithStrings("CAPABILITY_IAM")
                     .capabilitiesWithStrings("CAPABILITY_NAMED_IAM")
                     .build();
-
             cloudFormationClient.createStack(stackRequest);
-            log.info("Create stack: " + repoName + " successfully");
-
-            while (true) {
-                DescribeStacksRequest describeRequest = DescribeStacksRequest.builder()
-                        .stackName(repoName)
-                        .build();
-                DescribeStacksResponse describeResponse = cloudFormationClient.describeStacks(describeRequest);
-
-                String stackStatus = describeResponse.stacks().get(0).stackStatusAsString();
-
-                if (stackStatus.equals("CREATE_COMPLETE")) {
-                    log.info("Create stack: " + repoName + " successfully");
-                     break; // Break on success
-                } else if (stackStatus.endsWith("FAILED") || stackStatus.equals("ROLLBACK_COMPLETE")) {
-                    log.info("스택생성이 비정상적으로 종료되었습니다");
-                    break; // Break on failure
-                }
-                // Wait for a bit before checking again
-                Thread.sleep(10000); // 10 seconds
-            }
-
+            log.info("다음 스택을 등록 완료하였습니다: " + repoName);
         } catch (Exception e) {
             log.error("다음 이유로 스택 생성에 실패했습니다: " + e.getMessage());
         }
@@ -127,7 +104,7 @@ public class AWSCloudFormationServerService {
 
     public void deleteS3Bucket(String bucketName) {
         try {
-            emptyS3BucketV2(bucketName);
+            emptyS3Bucket(bucketName);
             DeleteBucketRequest deleteBucketRequest = DeleteBucketRequest.builder().bucket(bucketName).build();
             s3Client.deleteBucket(deleteBucketRequest);
         } catch (Exception e) {
@@ -136,25 +113,6 @@ public class AWSCloudFormationServerService {
     }
 
     public void emptyS3Bucket(String bucketName) {
-        ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder()
-                .bucket(bucketName)
-                .build();
-        ListObjectsV2Response listObjectsV2Response;
-
-        do {
-            listObjectsV2Response = s3Client.listObjectsV2(listObjectsV2Request);
-            for (S3Object s3Object : listObjectsV2Response.contents()) {
-                DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
-                        .bucket(bucketName)
-                        .key(s3Object.key())
-                        .build();
-                s3Client.deleteObject(deleteObjectRequest);
-            }
-            listObjectsV2Request = listObjectsV2Request.toBuilder().continuationToken(listObjectsV2Response.nextContinuationToken()).build();
-        } while (listObjectsV2Response.isTruncated());
-    }
-
-    public void emptyS3BucketV2(String bucketName) {
         ListObjectVersionsRequest listObjectVersionsRequest = ListObjectVersionsRequest.builder()
                 .bucket(bucketName)
                 .build();
