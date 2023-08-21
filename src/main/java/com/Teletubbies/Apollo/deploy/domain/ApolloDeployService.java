@@ -49,4 +49,12 @@ public class ApolloDeployService {
     protected void onUpdate() {
         updatedAt = new Date();
     }
+
+    public ApolloDeployService(ApolloUser user, Repo repo, String stackName, String endpoint, String stackType) {
+        this.apolloUser = user;
+        this.repo = repo;
+        this.stackName = stackName;
+        this.endpoint = endpoint;
+        this.stackType = stackType;
+    }
 }

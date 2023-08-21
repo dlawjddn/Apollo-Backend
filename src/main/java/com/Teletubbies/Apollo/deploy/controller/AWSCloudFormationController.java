@@ -5,6 +5,8 @@ import com.Teletubbies.Apollo.auth.service.UserService;
 import com.Teletubbies.Apollo.deploy.domain.ApolloDeployService;
 import com.Teletubbies.Apollo.deploy.dto.GetStackRequestDto;
 import com.Teletubbies.Apollo.deploy.dto.StackRequestDto;
+import com.Teletubbies.Apollo.deploy.dto.request.PostClientDeployRequest;
+import com.Teletubbies.Apollo.deploy.dto.response.PostClientDeployResponse;
 import com.Teletubbies.Apollo.deploy.service.AWSCloudFormationClientService;
 import com.Teletubbies.Apollo.deploy.service.AWSCloudFormationServerService;
 import com.Teletubbies.Apollo.deploy.service.AWSCloudFormationService;
@@ -28,20 +30,11 @@ public class AWSCloudFormationController {
 
     @Operation(summary = "Client stack 생성", description = "CloudFormation을 이용하여 Client stack을 생성한다.")
     @PostMapping("/cloudformation/{userId}/client")
-    public ResponseEntity<String> createClientStack(
+    public PostClientDeployResponse createClientStack(
             @PathVariable Long userId,
-            @RequestBody StackRequestDto stackRequestDto
+            @RequestBody PostClientDeployRequest request
     ) {
-        String repoName = stackRequestDto.getRepoName();
-        String EndPoint = awsCloudformationClientService.createClientStack(repoName);
-        ApolloUser apolloUser = userService.getUserById(userId);
-        ApolloDeployService apolloDeployService = new ApolloDeployService();
-        apolloDeployService.setApolloUser(apolloUser);
-        apolloDeployService.setStackName(repoName);
-        apolloDeployService.setEndpoint(EndPoint);
-        apolloDeployService.setStackType("client");
-        awsCloudformationClientService.saveService(apolloDeployService);
-        return ResponseEntity.ok(EndPoint);
+        return awsCloudformationClientService.saveService(userId, request);
     }
 
     @Operation(summary = "Client stack 제거", description = "CloudFormation을 이용하여 Client stack을 제거한다.")
