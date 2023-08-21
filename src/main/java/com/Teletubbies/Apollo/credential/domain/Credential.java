@@ -1,6 +1,7 @@
 package com.Teletubbies.Apollo.credential.domain;
 
 import com.Teletubbies.Apollo.auth.domain.ApolloUser;
+import com.Teletubbies.Apollo.credential.dto.request.PostCredentialRequest;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -50,5 +51,14 @@ public class Credential {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = new Date();
+    }
+
+    public Credential(ApolloUser userId, PostCredentialRequest request) {
+        this.awsAccountId = request.getAWSAccountId();
+        this.accessKey = request.getAWSAccessKey();
+        this.secretKey = request.getAWSSecretKey();
+        this.region = request.getAWSRegion();
+        this.githubOAuthToken = request.getGithubOAuthToken();
+        this.apolloUser = userId;
     }
 }

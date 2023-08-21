@@ -64,24 +64,6 @@ public class AWSCloudFormationClientService {
                         .build();
 
                 cloudFormationClient.createStack(stackRequest);
-
-                while (true) {
-                    DescribeStacksRequest describeRequest = DescribeStacksRequest.builder()
-                            .stackName(repoName)
-                            .build();
-                    DescribeStacksResponse describeResponse = cloudFormationClient.describeStacks(describeRequest);
-
-                    String stackStatus = describeResponse.stacks().get(0).stackStatusAsString();
-
-                    if (stackStatus.equals("CREATE_COMPLETE")) {
-                        log.info("Create stack: " + repoName + " successfully");
-                        return getS3BucketUrl(repoName, "ap-northeast-2");
-                    } else if (stackStatus.endsWith("FAILED") || stackStatus.equals("ROLLBACK_COMPLETE")) {
-                        log.info("스택생성이 비정상적으로 종료되었습니다");
-                        break;
-                    }
-                    Thread.sleep(10000); // 10 seconds
-                }
             }
         } catch (Exception e) {
             log.info("스택 생성중에 에러가 발생했습니다.: " + e.getMessage());
