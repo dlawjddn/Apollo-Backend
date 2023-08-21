@@ -19,12 +19,5 @@ public class AWSCloudFormationService {
         this.cloudFormationClient = awsClientComponent.createCFClient();
     }
 
-    public void deleteStack(String stackName) {
-        try {
-            cloudFormationClient.deleteStack(builder -> builder.stackName(stackName));
-            log.info("Delete stack: " + stackName + " successfully");
-        } catch (Exception e) {
-            log.error("Error occurred while deleting stack: " + e.getMessage());
-        }
-    }
+
 }

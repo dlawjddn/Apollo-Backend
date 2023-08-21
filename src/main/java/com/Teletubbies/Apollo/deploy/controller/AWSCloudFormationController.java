@@ -5,8 +5,13 @@ import com.Teletubbies.Apollo.auth.service.UserService;
 import com.Teletubbies.Apollo.deploy.domain.ApolloDeployService;
 import com.Teletubbies.Apollo.deploy.dto.GetStackRequestDto;
 import com.Teletubbies.Apollo.deploy.dto.StackRequestDto;
+import com.Teletubbies.Apollo.deploy.dto.request.DeleteClientDeployRequest;
 import com.Teletubbies.Apollo.deploy.dto.request.PostClientDeployRequest;
+import com.Teletubbies.Apollo.deploy.dto.request.PostServerDeployRequest;
+import com.Teletubbies.Apollo.deploy.dto.response.DeleteClientDeployResponse;
+import com.Teletubbies.Apollo.deploy.dto.response.DeleteServerDeployResponse;
 import com.Teletubbies.Apollo.deploy.dto.response.PostClientDeployResponse;
+import com.Teletubbies.Apollo.deploy.dto.response.PostServerDeployResponse;
 import com.Teletubbies.Apollo.deploy.service.AWSCloudFormationClientService;
 import com.Teletubbies.Apollo.deploy.service.AWSCloudFormationServerService;
 import com.Teletubbies.Apollo.deploy.service.AWSCloudFormationService;
@@ -38,38 +43,41 @@ public class AWSCloudFormationController {
     }
 
     @Operation(summary = "Client stack 제거", description = "CloudFormation을 이용하여 Client stack을 제거한다.")
-    @DeleteMapping("/cloudformation/{userId}client")
-    public ResponseEntity<String> deleteClientStack(
+    @DeleteMapping("/cloudformation/{userId}/client")
+    public DeleteClientDeployResponse deleteClientStack(
             @PathVariable Long userId,
-            @RequestBody StackRequestDto stackRequestDto
+            @RequestBody DeleteClientDeployRequest request
     ) {
-        String repoName = stackRequestDto.getRepoName();
-        awsCloudformationClientService.deleteClientStack(repoName);
-        return ResponseEntity.ok("Client stack is deleted successfully");
+        String repoName = request.getRepoName();
+        awsCloudformationClientService.deleteClientStack(userId, repoName);
+        DeleteClientDeployResponse response = new DeleteClientDeployResponse();
+        response.setContent("Client stack is deleted successfully");
+        return response;
     }
 
 
     @Operation(summary = "Server stack 생성", description = "CloudFormation을 이용하여 Server stack을 생성한다.")
     @PostMapping("/cloudformation/{userId}/server")
-    public ResponseEntity<String> createServerStack(
+    public PostServerDeployResponse createServerStack(
             @PathVariable Long userId,
-            @RequestBody StackRequestDto stackRequestDto
+            @RequestBody PostServerDeployRequest request
     ) {
-        String repoName = stackRequestDto.getRepoName();
-        awsCloudFormationServerService.createServerStack(repoName);
-        return ResponseEntity.ok("Server stack is created successfully");
+        return awsCloudFormationServerService.saveService(userId, request);
     }
 
     @Operation(summary = "Server stack 제거", description = "CloudFormation을 이용하여 Server stack을 제거한다.")
     @DeleteMapping("/cloudformation/{userId}/server")
-    public ResponseEntity<String> deleteServerStack(
+    public DeleteServerDeployResponse deleteServerStack(
             @PathVariable Long userId,
-            @RequestBody StackRequestDto stackRequestDto
+            @RequestBody DeleteClientDeployRequest request
     ) {
-        String repoName = stackRequestDto.getRepoName();
-        awsCloudFormationServerService.deleteServerStack(repoName);
-        return ResponseEntity.ok("Server stack is deleted successfully");
+        String repoName = request.getRepoName();
+        awsCloudFormationServerService.deleteServerStack(userId, repoName);
+        DeleteServerDeployResponse response = new DeleteServerDeployResponse();
+        response.setContent("Server stack is deleted successfully");
+        return response;
     }
+
 
     @Operation(summary = "Stack 조회", description = "사용자의 이름을 기반으로 client를 생성한 stack을 조회한다.")
     @GetMapping("/cloudformation/{userId}")

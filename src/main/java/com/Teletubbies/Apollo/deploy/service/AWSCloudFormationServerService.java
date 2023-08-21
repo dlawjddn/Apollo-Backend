@@ -1,12 +1,18 @@
 package com.Teletubbies.Apollo.deploy.service;
 
+import com.Teletubbies.Apollo.auth.domain.ApolloUser;
 import com.Teletubbies.Apollo.auth.domain.Repo;
 import com.Teletubbies.Apollo.auth.repository.RepoRepository;
+import com.Teletubbies.Apollo.auth.service.UserService;
 import com.Teletubbies.Apollo.core.exception.ApolloException;
 import com.Teletubbies.Apollo.core.exception.CustomErrorCode;
 import com.Teletubbies.Apollo.credential.domain.Credential;
 import com.Teletubbies.Apollo.credential.repository.CredentialRepository;
 import com.Teletubbies.Apollo.deploy.component.AwsClientComponent;
+import com.Teletubbies.Apollo.deploy.domain.ApolloDeployService;
+import com.Teletubbies.Apollo.deploy.dto.request.PostServerDeployRequest;
+import com.Teletubbies.Apollo.deploy.dto.response.PostServerDeployResponse;
+import com.Teletubbies.Apollo.deploy.repository.AwsServiceRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
@@ -26,45 +32,71 @@ public class AWSCloudFormationServerService {
     private final EcrClient ecrClient;
     private final RepoRepository repoRepository;
     private final CredentialRepository credentialRepository;
+    private final AwsServiceRepository awsServiceRepository;
+    private final UserService userService;
 
-    public AWSCloudFormationServerService(AwsClientComponent awsClientComponent, RepoRepository repoRepository, CredentialRepository credentialRepository) {
+    public AWSCloudFormationServerService(AwsClientComponent awsClientComponent, RepoRepository repoRepository, CredentialRepository credentialRepository, AwsServiceRepository awsServiceRepository, UserService userService) {
         this.cloudFormationClient = awsClientComponent.createCFClient();
         this.s3Client = awsClientComponent.createS3Client();
         this.ecrClient = awsClientComponent.createEcrClient();
         this.repoRepository = repoRepository;
         this.credentialRepository = credentialRepository;
+        this.awsServiceRepository = awsServiceRepository;
+        this.userService = userService;
     }
 
-    public void createServerStack(String repoName) {
+    public PostServerDeployResponse saveService(Long userId, PostServerDeployRequest request) {
+        String repoName = request.getRepoName();
+        String EndPoint = createServerStack(repoName);
+        ApolloUser user = userService.getUserById(userId);
+        Repo repo = repoRepository.findByRepoName(repoName)
+                .orElseThrow(() -> new ApolloException(NOT_FOUND_REPO_ERROR, "Repo 정보가 없습니다."));
+        ApolloDeployService apolloDeployService = new ApolloDeployService(user, repo, repoName, EndPoint, "server");
+        awsServiceRepository.save(apolloDeployService);
+        return new PostServerDeployResponse(repoName, "server", EndPoint);
+    }
+
+    public String createServerStack(String repoName) {
         final String templateURL = "https://s3.amazonaws.com/apollo-script/api/cloudformation.yaml";
         Repo repo = repoRepository.findByRepoName(repoName)
                 .orElseThrow(() -> new ApolloException(NOT_FOUND_REPO_ERROR, "Repo 정보가 없습니다."));
         Long userId = repo.getApolloUser().getId();
         Credential credential = credentialRepository.findByApolloUserId(userId)
                 .orElseThrow(() -> new ApolloException(CustomErrorCode.CREDENTIAL_NOT_FOUND_ERROR, "Credential 정보가 없습니다."));
-        try {
-            CreateStackRequest stackRequest = CreateStackRequest.builder()
-                    .templateURL(templateURL)
-                    .stackName(repoName)
-                    .parameters(
-                            Parameter.builder().parameterKey("AWSRegion").parameterValue(credential.getRegion()).build(),
-                            Parameter.builder().parameterKey("accountId").parameterValue(credential.getAwsAccountId()).build(),
-                            Parameter.builder().parameterKey("GithubRepositoryName").parameterValue(repo.getRepoName()).build(),
-                            Parameter.builder().parameterKey("RepoLocation").parameterValue(repo.getRepoUrl()).build(),
-                            Parameter.builder().parameterKey("RepoLogin").parameterValue(repo.getOwnerLogin()).build(),
-                            Parameter.builder().parameterKey("GithubToken").parameterValue(credential.getGithubOAuthToken()).build()
-                    )
-                    .capabilitiesWithStrings("CAPABILITY_IAM")
-                    .capabilitiesWithStrings("CAPABILITY_NAMED_IAM")
-                    .build();
-            cloudFormationClient.createStack(stackRequest);
-            log.info("다음 스택을 등록 완료하였습니다: " + repoName);
-        } catch (Exception e) {
-            log.error("다음 이유로 스택 생성에 실패했습니다: " + e.getMessage());
-        }
+
+        CreateStackRequest stackRequest = getCreateStackRequest(repoName, templateURL, repo, credential);
+        cloudFormationClient.createStack(stackRequest);
+        Output output = getOutput(repoName);
+        return output.outputValue();
     }
 
-    public void deleteServerStack(String stackName) {
+    private Output getOutput(String repoName) {
+        DescribeStacksRequest describeStacksRequest = DescribeStacksRequest.builder().stackName(repoName).build();
+        cloudFormationClient.waiter().waitUntilStackCreateComplete(describeStacksRequest);
+        DescribeStacksResponse describeStacksResponse = cloudFormationClient.describeStacks(describeStacksRequest);
+        return describeStacksResponse.stacks().get(0).outputs().get(0);
+    }
+
+    private CreateStackRequest getCreateStackRequest(String repoName, String templateURL, Repo repo, Credential credential) {
+        return CreateStackRequest
+                .builder()
+                .templateURL(templateURL)
+                .stackName(repoName)
+                .parameters(
+                        Parameter.builder().parameterKey("AWSRegion").parameterValue(credential.getRegion()).build(),
+                        Parameter.builder().parameterKey("accountId").parameterValue(credential.getAwsAccountId()).build(),
+                        Parameter.builder().parameterKey("GithubRepositoryName").parameterValue(repo.getRepoName()).build(),
+                        Parameter.builder().parameterKey("RepoLocation").parameterValue(repo.getRepoUrl()).build(),
+                        Parameter.builder().parameterKey("RepoLogin").parameterValue(repo.getOwnerLogin()).build(),
+                        Parameter.builder().parameterKey("GithubToken").parameterValue(credential.getGithubOAuthToken()).build()
+                )
+                .capabilitiesWithStrings("CAPABILITY_IAM")
+                .capabilitiesWithStrings("CAPABILITY_NAMED_IAM")
+                .build();
+    }
+
+    public void deleteServerStack(Long userId, String stackName) {
+        ApolloUser user = userService.getUserById(userId);
         String ecrRepositoryName = getECRRepository(stackName);
         String bucketName = getBucketName(stackName);
 
@@ -82,9 +114,13 @@ public class AWSCloudFormationServerService {
         } else {
             log.info("버킷이 존재하지 않습니다.");
         }
+        ApolloDeployService service = awsServiceRepository.findByApolloUserAndStackName(user, stackName);
+        if (service != null) {
+            awsServiceRepository.delete(service);
+        }
     }
 
-    public String getBucketName(String stackName) {
+    private String getBucketName(String stackName) {
         try {
             DescribeStackResourcesRequest request = DescribeStackResourcesRequest.builder()
                     .stackName(stackName)
@@ -102,7 +138,7 @@ public class AWSCloudFormationServerService {
         return null;
     }
 
-    public void deleteS3Bucket(String bucketName) {
+    private void deleteS3Bucket(String bucketName) {
         try {
             emptyS3Bucket(bucketName);
             DeleteBucketRequest deleteBucketRequest = DeleteBucketRequest.builder().bucket(bucketName).build();
@@ -112,7 +148,7 @@ public class AWSCloudFormationServerService {
         }
     }
 
-    public void emptyS3Bucket(String bucketName) {
+    private void emptyS3Bucket(String bucketName) {
         ListObjectVersionsRequest listObjectVersionsRequest = ListObjectVersionsRequest.builder()
                 .bucket(bucketName)
                 .build();
@@ -165,7 +201,7 @@ public class AWSCloudFormationServerService {
         } while (listObjectsV2Response.isTruncated());
     }
 
-    public String getECRRepository(String stackName) {
+    private String getECRRepository(String stackName) {
         try {
             DescribeStackResourcesRequest request = DescribeStackResourcesRequest.builder()
                     .stackName(stackName)
@@ -182,7 +218,7 @@ public class AWSCloudFormationServerService {
         return null;
     }
 
-    public void deleteECRRepository(String repositoryName) {
+    private void deleteECRRepository(String repositoryName) {
         try {
             DeleteRepositoryRequest deleteRepositoryRequest = DeleteRepositoryRequest.builder()
                     .repositoryName(repositoryName)
@@ -195,7 +231,7 @@ public class AWSCloudFormationServerService {
         }
     }
 
-    public void deleteCloudFormationStack(String stackName) {
+    private void deleteCloudFormationStack(String stackName) {
         try {
             DeleteStackRequest deleteStackRequest = DeleteStackRequest.builder().stackName(stackName).build();
             cloudFormationClient.deleteStack(deleteStackRequest);
