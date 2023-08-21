@@ -23,6 +23,8 @@ public class TagService {
     private final TagRepository tagRepository;
     @Transactional
     public Tag saveTag(String tagName){
+        if (!tagRepository.existsByName(tagName))
+            return findByTagName(tagName);
         return tagRepository.save(new Tag(tagName));
     }
     @Transactional
