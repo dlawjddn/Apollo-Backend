@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.CREDENTIAL_NOT_FOUND_ERROR;
-import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.NOT_FOUND_USER_ERROR;
 
 @Service
 @RequiredArgsConstructor
@@ -41,9 +40,15 @@ public class CredentialService {
 
 
     public GetCredentialResponse readCredential(Long userId) {
-        return credentialRepository.findByApolloUserId(userId)
-                .map(credential -> new GetCredentialResponse())
-                .orElseThrow(() -> new CredentialException(NOT_FOUND_USER_ERROR, "해당하는 유저 ID의 유저가 없습니다"));
+        Credential credential = credentialRepository.findByApolloUserId(userId)
+                .orElseThrow(() -> new CredentialException(CREDENTIAL_NOT_FOUND_ERROR, "해당 유저의 credential이 없습니다"));
+        GetCredentialResponse response = new GetCredentialResponse();
+        response.setGithubOAuthToken(credential.getGithubOAuthToken());
+        response.setAWSAccountId(credential.getAwsAccountId());
+        response.setAWSAccessKey(credential.getAccessKey());
+        response.setAWSSecretKey(credential.getSecretKey());
+        response.setAWSRegion(credential.getRegion());
+        return response;
     }
 
     @Transactional
