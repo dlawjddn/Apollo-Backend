@@ -9,10 +9,7 @@ import com.Teletubbies.Apollo.board.dto.comment.response.CommentInPostResponse;
 import com.Teletubbies.Apollo.board.dto.post.request.DeletePostRequest;
 import com.Teletubbies.Apollo.board.dto.post.request.SavePostRequest;
 import com.Teletubbies.Apollo.board.dto.post.request.UpdatePostRequest;
-import com.Teletubbies.Apollo.board.dto.post.response.FindPostResponse;
-import com.Teletubbies.Apollo.board.dto.post.response.PostDetailResponse;
-import com.Teletubbies.Apollo.board.dto.post.response.SavePostResponse;
-import com.Teletubbies.Apollo.board.dto.post.response.UpdatePostResponse;
+import com.Teletubbies.Apollo.board.dto.post.response.*;
 import com.Teletubbies.Apollo.board.dto.tag.ConvertTag;
 import com.Teletubbies.Apollo.board.service.CommentService;
 import com.Teletubbies.Apollo.board.service.PostService;
@@ -52,8 +49,8 @@ public class PostController {
         return new SavePostResponse(post.getId(), findUser.getId());
     }
     @GetMapping("/board")
-    public List<FindPostResponse> findAllPosts(){
-        return postService.findAllPosts();
+    public StartBoard findAllPosts(){
+        return new StartBoard(postService.findAllPosts(), tagService.findAllTag());
     }
     @GetMapping("/tag")
     public List<ConvertTag> findAllTags() {return tagService.findAllTag();}
@@ -67,7 +64,7 @@ public class PostController {
                 .toList();
         log.info("게시글의 태그 조회 완료, 태그 dto 변환 완료");
 
-        FindPostResponse postResponse = new FindPostResponse(findPost.getApolloUser().getId(), findPost.getId(), findPost.getTitle(), findPost.getContent());
+        OriginPostResponse postResponse = new OriginPostResponse(findPost.getApolloUser().getId(), findPost.getId(), findPost.getTitle(), findPost.getContent(), tagOfPost, findPost.getCreateAt());
         log.info("게시글 dto 변환 완료");
 
         List<Comment> findComments = commentService.findAllCommentByPost(findPost);
