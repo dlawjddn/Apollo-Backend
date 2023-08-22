@@ -26,8 +26,4 @@ public class PostWithTag {
         this.post = post;
         this.tag = tag;
     }
-    public PostWithTag changeTag(Tag tag){
-        this.tag = tag;
-        return this;
-    }
 }
