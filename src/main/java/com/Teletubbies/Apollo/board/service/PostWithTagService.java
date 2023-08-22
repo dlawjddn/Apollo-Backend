@@ -32,12 +32,14 @@ public class PostWithTagService {
         for (String newTagName : newTagNames) {
             int count = 0;
             for (String originTagName : originTagNames) {
-                if (originTagName.equals(newTagName)) break; //  keep && new
+                if (originTagName.equals(newTagName)) break; //  기존에 존재하는 이름인 경우
                 count++;
             }
-            if (count == originTagNames.size()) {
-                if (tagService.existsByTagName(newTagName))
+            if (count == originTagNames.size()) { // 새로운 태그가 기존 태그와 일치 되는 것이 없음
+                if (tagService.existsByTagName(newTagName)) {
+                    log.info(newTagName);
                     saveTags.add(tagService.findByTagName(newTagName));
+                }
                 else
                     saveTags.add(tagService.saveTag(newTagName));
                 //saveTags.add(new Tag(newTagName));
