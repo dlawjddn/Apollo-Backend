@@ -42,7 +42,9 @@ public class PostService {
                         findPost.getApolloUser().getId(),
                         findPost.getId(),
                         findPost.getTitle(),
-                        tagService.findAllTag(),
+                        postWithTagService.findPostWithTagByPost(findPost).stream()
+                                .map(postWithTag -> new ConvertTag(postWithTag.getTag()))
+                                .toList(),
                         findPost.getCreateAt()))
                 .toList();
 
