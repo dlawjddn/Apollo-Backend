@@ -1,7 +1,6 @@
 package com.Teletubbies.Apollo.deploy.controller;
 
 import com.Teletubbies.Apollo.auth.service.UserService;
-import com.Teletubbies.Apollo.deploy.dto.request.GetDeployStackRequest;
 import com.Teletubbies.Apollo.deploy.dto.request.DeleteClientDeployRequest;
 import com.Teletubbies.Apollo.deploy.dto.request.PostClientDeployRequest;
 import com.Teletubbies.Apollo.deploy.dto.request.PostServerDeployRequest;
@@ -13,7 +12,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -74,12 +72,9 @@ public class AWSCloudFormationController {
         return response;
     }
 
-//    @Operation(summary = "Stack 조회", description = "사용자의 이름을 기반으로 client를 생성한 stack을 조회한다.")
-//    @GetMapping("/cloudformation/{userId}")
-//    public ResponseEntity<String> getClientStack(@PathVariable Long userId,
-//                                                 @RequestBody GetDeployStackRequest request) {
-//        List<GetDeployStackResponse> stacks = awsCloudFormationService.getDeployStacks(userId, request);
-//
-//        return ResponseEntity.ok("ok");
-//    }
+    @Operation(summary = "Stack 조회", description = "사용자의 이름을 기반으로 client를 생성한 stack을 조회한다.")
+    @GetMapping("/cloudformation/{userId}")
+    public List<GetDeployStackResponse> getClientStack(@PathVariable Long userId) {
+      return awsCloudFormationService.getDeployStacks(userId);
+    }
 }

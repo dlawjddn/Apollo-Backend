@@ -49,7 +49,8 @@ public class AWSCloudFormationClientService {
         ApolloUser user = userService.getUserById(userId);
         Repo repo = repoRepository.findByRepoName(repoName)
                 .orElseThrow(() -> new DeploymentException(NOT_FOUND_REPO_ERROR, "해당 레포가 존재하지 않습니다."));
-        ApolloDeployService apolloDeployService = new ApolloDeployService(user, repo, repoName, EndPoint, "client");
+        ApolloDeployService apolloDeployService =
+                new ApolloDeployService(user, repo, repoName, EndPoint, "client");
         awsServiceRepository.save(apolloDeployService);
         return new PostClientDeployResponse(repoName, "client", EndPoint);
     }
@@ -109,7 +110,7 @@ public class AWSCloudFormationClientService {
         }
     }
 
-    public void deleteS3Bucket(S3Client s3Client, String bucketName) {
+    private void deleteS3Bucket(S3Client s3Client, String bucketName) {
         try {
             emptyS3Bucket(s3Client, bucketName);
             DeleteBucketRequest deleteBucketRequest = DeleteBucketRequest.builder().bucket(bucketName).build();
@@ -120,7 +121,7 @@ public class AWSCloudFormationClientService {
         }
     }
 
-    public void emptyS3Bucket(S3Client s3Client, String bucketName) {
+    private void emptyS3Bucket(S3Client s3Client, String bucketName) {
         ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder().bucket(bucketName).build();
         ListObjectsV2Response listObjectsV2Response;
 
@@ -134,7 +135,7 @@ public class AWSCloudFormationClientService {
         } while (listObjectsV2Response.isTruncated());
     }
 
-    public void deleteCloudFormationStack(CloudFormationClient cfClient, String stackName) {
+    private void deleteCloudFormationStack(CloudFormationClient cfClient, String stackName) {
         try {
             DeleteStackRequest deleteStackRequest = DeleteStackRequest.builder().stackName(stackName).build();
             cfClient.deleteStack(deleteStackRequest);
@@ -144,7 +145,7 @@ public class AWSCloudFormationClientService {
         }
     }
 
-    public String getBucketName(CloudFormationClient cfClient, String stackName) {
+    private String getBucketName(CloudFormationClient cfClient, String stackName) {
         try {
             DescribeStackResourcesRequest request = DescribeStackResourcesRequest.builder()
                     .stackName(stackName)
