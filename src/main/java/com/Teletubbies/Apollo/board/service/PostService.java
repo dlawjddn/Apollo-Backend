@@ -82,9 +82,9 @@ public class PostService {
 
     //delete
     @Transactional
-    public String deletePost(DeletePostRequest request){
-        Post findPost = findPostById(request.getPostId());
-        if (!findPost.getApolloUser().getId().equals(request.getUserId()))
+    public String deletePost(Long postId, Long userId){
+        Post findPost = findPostById(postId);
+        if (!findPost.getApolloUser().getId().equals(userId))
             throw new IllegalArgumentException("작성자와 수정자는 동일한 사람이여야 합니다.");
 
         List<Tag> tags = new ArrayList<>();

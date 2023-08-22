@@ -118,8 +118,8 @@ public class PostController {
 
         return new UpdatePostResponse(updatedPost.getId());
     }
-    @DeleteMapping("/board")
-    public String deletePost(@RequestBody DeletePostRequest request){
-        return postService.deletePost(request);
+    @DeleteMapping("/board/{postId}")
+    public String deletePost(@PathVariable Long postId, @RequestBody DeletePostRequest request){
+        return postService.deletePost(postId, request.getUserId());
     }
 }
