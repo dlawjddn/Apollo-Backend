@@ -11,6 +11,7 @@ import com.Teletubbies.Apollo.board.dto.tag.ConvertTag;
 import com.Teletubbies.Apollo.board.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +38,7 @@ public class PostService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글 아이디입니다."));
     }
     public List<FindPostResponse> findAllPosts(){
-        return postRepository.findAll().stream()
+        return postRepository.findAll(Sort.by(Sort.Direction.DESC, "createAt")).stream()
                 .map(findPost -> new FindPostResponse(
                         findPost.getApolloUser().getId(),
                         findPost.getId(),
