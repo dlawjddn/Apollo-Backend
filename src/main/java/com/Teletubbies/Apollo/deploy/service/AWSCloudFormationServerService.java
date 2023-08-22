@@ -48,7 +48,7 @@ public class AWSCloudFormationServerService {
     public PostServerDeployResponse saveService(Long userId, PostServerDeployRequest request) {
         CloudFormationClient cfClient = awsClientComponent.createCFClient(userId);
         String repoName = request.getRepoName();
-        String EndPoint = createServerStack(cfClient, repoName);
+        String EndPoint = "http://" + createServerStack(cfClient, repoName);
         ApolloUser user = userService.getUserById(userId);
         Repo repo = repoRepository.findByRepoName(repoName)
                 .orElseThrow(() -> new ApolloException(NOT_FOUND_REPO_ERROR, "Repo 정보가 없습니다."));
