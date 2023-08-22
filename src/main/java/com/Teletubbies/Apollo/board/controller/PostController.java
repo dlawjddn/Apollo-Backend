@@ -83,9 +83,9 @@ public class PostController {
     public List<FindPostResponse> findSimilarPostByTitleOrContent(@PathVariable String searchString){
         return postService.findSimilarPostByTitleOrContent(searchString);
     }
-    @PatchMapping("/board")
-    public UpdatePostResponse updatePost(@RequestBody UpdatePostRequest request){
-        Post findPost = postService.findPostById(request.getPostId());
+    @PatchMapping("/board/{postId}")
+    public UpdatePostResponse updatePost(@PathVariable Long postId, @RequestBody UpdatePostRequest request){
+        Post findPost = postService.findPostById(postId);
         log.info("게시글 조회 성공");
 
         Post updatedPost= postService.updatePost(findPost, request.getTitle(), request.getContent());
@@ -100,7 +100,9 @@ public class PostController {
 
         // 유지 되어야 하는 태그는 건들 필요가 없음
         List<Tag> saveTagInUpdate = postWithTagService.findSaveTagInUpdate(originTagNames, request.getTagNames());
+        log.info("저장되어야 하는 태그 목록 조회 완료");
         List<Tag> deleteTagInUpdate = postWithTagService.findDeleteTagInUpdate(originTagNames, request.getTagNames());
+        log.info("삭제 되어야 하는 태그 목록 조회 완료");
         log.info("게시물의 기존 태그와 수정된 태그 parsing 성공");
 
         postWithTagService.updatingPostWithOldTag(updatedPost, deleteTagInUpdate);
