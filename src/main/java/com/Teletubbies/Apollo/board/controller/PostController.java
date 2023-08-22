@@ -18,6 +18,8 @@ import com.Teletubbies.Apollo.board.service.PostWithTagService;
 import com.Teletubbies.Apollo.board.service.TagService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -49,8 +51,9 @@ public class PostController {
         return new SavePostResponse(post.getId(), findUser.getId());
     }
     @GetMapping("/board")
-    public StartBoard findAllPosts(){
-        return new StartBoard(postService.findAllPosts(), tagService.findAllTag());
+    public StartBoard findAllPosts(@RequestParam int pageNum){
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 3, Sort.by("createAt").descending());
+        return new StartBoard(postService.findAllPosts(pageRequest), tagService.findAllTag());
     }
     @GetMapping("/tag")
     public List<ConvertTag> findAllTags() {return tagService.findAllTag();}
