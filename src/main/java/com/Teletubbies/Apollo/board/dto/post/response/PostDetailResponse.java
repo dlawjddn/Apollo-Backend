@@ -9,11 +9,11 @@ import java.util.List;
 
 @Data
 public class PostDetailResponse {
-    private FindPostResponse post;
+    private OriginPostResponse post;
     private List<CommentInPostResponse> comments;
     private List<ConvertTag> tags;
 
-    public PostDetailResponse(FindPostResponse post, List<CommentInPostResponse> comments, List<ConvertTag> tags) {
+    public PostDetailResponse(OriginPostResponse post, List<CommentInPostResponse> comments, List<ConvertTag> tags) {
         this.post = post;
         this.comments = comments;
         this.tags = tags;
