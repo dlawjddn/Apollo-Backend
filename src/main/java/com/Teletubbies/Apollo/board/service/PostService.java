@@ -7,6 +7,7 @@ import com.Teletubbies.Apollo.board.domain.Tag;
 import com.Teletubbies.Apollo.board.dto.post.request.DeletePostRequest;
 import com.Teletubbies.Apollo.board.dto.post.request.SavePostRequest;
 import com.Teletubbies.Apollo.board.dto.post.response.FindPostResponse;
+import com.Teletubbies.Apollo.board.dto.tag.ConvertTag;
 import com.Teletubbies.Apollo.board.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +42,8 @@ public class PostService {
                         findPost.getApolloUser().getId(),
                         findPost.getId(),
                         findPost.getTitle(),
-                        findPost.getContent()))
+                        tagService.findAllTag(),
+                        findPost.getCreateAt()))
                 .toList();
 
     }
@@ -49,22 +51,28 @@ public class PostService {
         List<Post> findPosts = postRepository.findByTitleContainingIgnoreCase(title);
         return findPosts.stream()
                 .map(findPost -> new FindPostResponse(
-                        findPost.getId(),
                         findPost.getApolloUser().getId(),
+                        findPost.getId(),
                         findPost.getTitle(),
-                        findPost.getContent()))
-                .collect(Collectors.toList());
+                        postWithTagService.findPostWithTagByPost(findPost).stream()
+                                .map(postWithTag -> new ConvertTag(postWithTag.getTag()))
+                                .toList(),
+                        findPost.getCreateAt()))
+                .toList();
 
     }
     public List<FindPostResponse> findSimilarPostByTitleOrContent(String searchString){
         List<Post> findPosts = postRepository.findByContentContainingIgnoreCaseOrTitleContainingIgnoreCase(searchString, searchString);
         return findPosts.stream()
                 .map(findPost -> new FindPostResponse(
-                        findPost.getId(),
                         findPost.getApolloUser().getId(),
+                        findPost.getId(),
                         findPost.getTitle(),
-                        findPost.getContent()))
-                .collect(Collectors.toList());
+                        postWithTagService.findPostWithTagByPost(findPost).stream()
+                                .map(postWithTag -> new ConvertTag(postWithTag.getTag()))
+                                .toList(),
+                        findPost.getCreateAt()))
+                .toList();
     }
     //update
     @Transactional
