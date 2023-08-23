@@ -7,14 +7,14 @@ import java.util.Date;
 import java.util.List;
 
 @Data
-public class FindPostResponse {
+public class PostNoContentResponse {
     private Long userId;
     private Long postId;
     private String title;
     private List<ConvertTag> tags;
     private Date createAt;
 
-    public FindPostResponse(Long userId, Long postId, String title, List<ConvertTag> tags, Date createAt) {
+    public PostNoContentResponse(Long userId, Long postId, String title, List<ConvertTag> tags, Date createAt) {
         this.userId = userId;
         this.postId = postId;
         this.title = title;

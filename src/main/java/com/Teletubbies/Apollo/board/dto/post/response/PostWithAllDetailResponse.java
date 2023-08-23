@@ -11,11 +11,9 @@ import java.util.List;
 public class PostDetailResponse {
     private OriginPostResponse post;
     private List<CommentInPostResponse> comments;
-    private List<ConvertTag> tags;
 
-    public PostDetailResponse(OriginPostResponse post, List<CommentInPostResponse> comments, List<ConvertTag> tags) {
+    public PostDetailResponse(OriginPostResponse post, List<CommentInPostResponse> comments) {
         this.post = post;
         this.comments = comments;
-        this.tags = tags;
     }
 }
