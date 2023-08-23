@@ -68,7 +68,6 @@ public class AWSCloudFormationService {
                 return false;
             }
         }
-
         return true;
     }
 }
