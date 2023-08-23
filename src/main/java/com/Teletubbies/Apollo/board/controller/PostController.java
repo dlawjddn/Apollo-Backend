@@ -35,10 +35,8 @@ public class PostController {
     private final UserService userService;
     private final CommentService commentService;
     @PostMapping("/board")
-    public SavePostResponse registerPost(@RequestBody SavePostRequest request){
-        log.info("컨트롤러 단 진입 완료");
+    public SavePostResponse savePost(@RequestBody SavePostRequest request){
         ApolloUser findUser = userService.getUserById(request.getUserId());
-
         Post post = postService.savePost(findUser, request);
         log.info("게시글 저장 완료");
 
@@ -70,14 +68,15 @@ public class PostController {
         PostOnlyPostResponse postResponse = new PostOnlyPostResponse(findPost.getApolloUser().getId(), findPost.getId(), findPost.getTitle(), findPost.getContent(), tagOfPost, findPost.getCreateAt());
         log.info("게시글 dto 변환 완료");
 
-        List<Comment> findComments = commentService.findAllCommentByPost(findPost);
-        log.info("게시글의 댓글 조회 완료");
-        List<CommentInPostResponse> commentResponses = findComments.stream()
+        List<CommentInPostResponse> commentResponses = commentService.findAllCommentByPost(findPost).stream()
                 .map(findComment -> new CommentInPostResponse(findComment.getId(), findComment.getApolloUser().getId(), findComment.getContent(), findComment.getCreateAt()))
                 .toList();
-        log.info("게시글의 댓글 dto 변환 완료");
+        log.info("게시글의 댓글 조회 완료, dto 변환 완료");
         return new PostWithAllDetailResponse(postResponse, commentResponses);
     }
+    /*
+    태그별 post 조회 로직도 만들어야 함!
+     */
     @GetMapping("/board/title/{titleName}")
     public List<PostNoContentResponse> findSimilarPostByTitle(@PathVariable String titleName){
         return postService.findSimilarPostByTitle(titleName);
@@ -93,7 +92,7 @@ public class PostController {
 
         List<String> originTagNames = postWithTagService.findPostWithTagByPost(updatedPost).stream()
                 .map(findPostWithTag -> findPostWithTag.getTag().getName()).toList();;
-        log.info("게시글에 할당된 태그들 조회 및 변환 성공");
+        log.info("게시글에 할당된 태그들 조회 및 dto 변환 성공");
 
         postWithTagService.updateAssociationPostAndTag(updatedPost, originTagNames, request.getTagNames());
         log.info("게시글 tag 연관관계 재정의, 연관관계 전혀 없는 태그 삭제 완료");
