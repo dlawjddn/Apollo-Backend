@@ -51,14 +51,14 @@ public class PostController {
         return new SavePostResponse(post.getId(), findUser.getId());
     }
     @GetMapping("/board")
-    public StartBoard findAllPosts(@RequestParam int pageNum){
+    public StartBoard findDataForBoardPage(@RequestParam int pageNum){
         PageRequest pageRequest = PageRequest.of(pageNum - 1, 3, Sort.by("createAt").descending());
         return new StartBoard(postService.findAllPosts(pageRequest), tagService.findAllTag());
     }
     @GetMapping("/tag")
     public List<ConvertTag> findAllTags() {return tagService.findAllTag();}
     @GetMapping("/board/{postId}")
-    public PostWithAllDetailResponse findPostDetails(@PathVariable Long postId){
+    public PostWithAllDetailResponse findPostWithAllInformation(@PathVariable Long postId){
         Post findPost = postService.findPostById(postId);
         log.info("게시글 조회 완료");
 
@@ -88,36 +88,15 @@ public class PostController {
     }
     @PatchMapping("/board/{postId}")
     public UpdatePostResponse updatePost(@PathVariable Long postId, @RequestBody UpdatePostRequest request){
-        Post findPost = postService.findPostById(postId);
-        log.info("게시글 조회 성공");
+        Post updatedPost= postService.updatePost(postService.findPostById(postId), request.getTitle(), request.getContent());
+        log.info("게시글 내용 업데이트 성공");
 
-        Post updatedPost= postService.updatePost(findPost, request.getTitle(), request.getContent());
-        log.info("게시글 업데이트 성공");
+        List<String> originTagNames = postWithTagService.findPostWithTagByPost(updatedPost).stream()
+                .map(findPostWithTag -> findPostWithTag.getTag().getName()).toList();;
+        log.info("게시글에 할당된 태그들 조회 및 변환 성공");
 
-        List<PostWithTag> findPostWithTags = postWithTagService.findPostWithTagByPost(updatedPost);
-        log.info("태그와 게시물 연관 객체 조회 성공");
-
-        List<String> originTagNames =  findPostWithTags.stream()
-                .map(findPostWithTag -> findPostWithTag.getTag().getName()).toList();
-        log.info("기존 게시글에 매핑된 태그 조회 성공");
-
-        // 유지 되어야 하는 태그는 건들 필요가 없음
-        List<Tag> saveTagInUpdate = postWithTagService.findSaveTagInUpdate(originTagNames, request.getTagNames());
-        log.info("저장되어야 하는 태그 목록 조회 완료");
-        List<Tag> deleteTagInUpdate = postWithTagService.findDeleteTagInUpdate(originTagNames, request.getTagNames());
-        log.info("삭제 되어야 하는 태그 목록 조회 완료");
-        log.info("게시물의 기존 태그와 수정된 태그 parsing 성공");
-
-        postWithTagService.updatingPostWithOldTag(updatedPost, deleteTagInUpdate);
-        log.info("게시글에 더 이상 필요없는 태그 연관관계 삭제 완료");
-
-        deleteTagInUpdate.forEach(deleteTag -> {
-                            if (postWithTagService.findPostWithTagByTag(deleteTag).size() == 0)
-                                tagService.deleteTag(deleteTag);}
-        ); log.info("게시글과 연관 관계가 전혀 없는 태그 삭제 완료");
-
-        postWithTagService.updatingPostWithNewTag(updatedPost, saveTagInUpdate);
-        log.info("게시글에 새로 필요한 태그 연관관계 저장");
+        postWithTagService.updateAssociationPostAndTag(updatedPost, originTagNames, request.getTagNames());
+        log.info("게시글 tag 연관관계 재정의, 연관관계 전혀 없는 태그 삭제 완료");
 
         return new UpdatePostResponse(updatedPost.getId());
     }
