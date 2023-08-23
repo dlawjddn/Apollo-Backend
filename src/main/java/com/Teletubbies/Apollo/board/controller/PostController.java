@@ -58,16 +58,16 @@ public class PostController {
     @GetMapping("/tag")
     public List<ConvertTag> findAllTags() {return tagService.findAllTag();}
     @GetMapping("/board/{postId}")
-    public PostDetailResponse findPostDetails(@PathVariable Long postId){
+    public PostWithAllDetailResponse findPostDetails(@PathVariable Long postId){
         Post findPost = postService.findPostById(postId);
         log.info("게시글 조회 완료");
 
-        List<ConvertTag> tagOfPost = postWithTagService.findPostWithTagByPost(postService.findPostById(postId)).stream()
+        List<ConvertTag> tagOfPost = postWithTagService.findPostWithTagByPost(findPost).stream()
                 .map(postWithTag -> new ConvertTag(postWithTag.getTag().getId(), postWithTag.getTag().getName()))
                 .toList();
         log.info("게시글의 태그 조회 완료, 태그 dto 변환 완료");
 
-        OriginPostResponse postResponse = new OriginPostResponse(findPost.getApolloUser().getId(), findPost.getId(), findPost.getTitle(), findPost.getContent(), tagOfPost, findPost.getCreateAt());
+        PostOnlyPostResponse postResponse = new PostOnlyPostResponse(findPost.getApolloUser().getId(), findPost.getId(), findPost.getTitle(), findPost.getContent(), tagOfPost, findPost.getCreateAt());
         log.info("게시글 dto 변환 완료");
 
         List<Comment> findComments = commentService.findAllCommentByPost(findPost);
@@ -76,14 +76,14 @@ public class PostController {
                 .map(findComment -> new CommentInPostResponse(findComment.getId(), findComment.getApolloUser().getId(), findComment.getContent(), findComment.getCreateAt()))
                 .toList();
         log.info("게시글의 댓글 dto 변환 완료");
-        return new PostDetailResponse(postResponse, commentResponses, tagOfPost);
+        return new PostWithAllDetailResponse(postResponse, commentResponses);
     }
     @GetMapping("/board/title/{titleName}")
-    public List<FindPostResponse> findSimilarPostByTitle(@PathVariable String titleName){
+    public List<PostNoContentResponse> findSimilarPostByTitle(@PathVariable String titleName){
         return postService.findSimilarPostByTitle(titleName);
     }
     @GetMapping("board/titleOrContent/{searchString}")
-    public List<FindPostResponse> findSimilarPostByTitleOrContent(@PathVariable String searchString){
+    public List<PostNoContentResponse> findSimilarPostByTitleOrContent(@PathVariable String searchString){
         return postService.findSimilarPostByTitleOrContent(searchString);
     }
     @PatchMapping("/board/{postId}")
