@@ -7,7 +7,7 @@ import java.util.Date;
 import java.util.List;
 
 @Data
-public class OriginPostResponse {
+public class PostOnlyPostResponse {
     private Long userId;
     private Long postId;
     private String title;
@@ -15,7 +15,7 @@ public class OriginPostResponse {
     private List<ConvertTag> tags;
     private Date createAt;
 
-    public OriginPostResponse(Long userId, Long postId, String title, String content, List<ConvertTag> tags, Date createAt) {
+    public PostOnlyPostResponse(Long userId, Long postId, String title, String content, List<ConvertTag> tags, Date createAt) {
         this.userId = userId;
         this.postId = postId;
         this.title = title;
