@@ -27,7 +27,12 @@ public class PostWithTagService {
         return postWithTagRepository.findAllByPost(post);
     }
     public List<PostWithTag> findPostWithTagByTag(Tag tag){return postWithTagRepository.findAllByTag(tag);}
-    public List<Tag> findSaveTagInUpdate(List<String> originTagNames, List<String> newTagNames){
+
+    /**
+     * post와 tag의 연관관계 업데이트를 위한 함수들
+     * private으로 설정한 이유는 update 로직에서만 쓰이고, 이를 하나로 묶어서 판단하기 편하게 하기 위함
+     */
+    private List<Tag> findSaveTagInUpdate(List<String> originTagNames, List<String> newTagNames){
         List<Tag> saveTags = new ArrayList<>();
         for (String newTagName : newTagNames) {
             int count = 0;
@@ -47,7 +52,7 @@ public class PostWithTagService {
         }
         return saveTags;
     }
-    public List<Tag> findDeleteTagInUpdate(List<String> originTagNames, List<String> newTagNames){
+    private List<Tag> findDeleteTagInUpdate(List<String> originTagNames, List<String> newTagNames){
         List<Tag> deleteTags = new ArrayList<>();
         for (String originTagName : originTagNames) { // keepTagNames, deleteTagNames 생성완료
             int count = 0;
@@ -61,15 +66,40 @@ public class PostWithTagService {
         }
         return deleteTags;
     }
-    public void updatingPostWithNewTag(Post post, List<Tag> saveTags){
+    private void updatingPostWithNewTag(Post post, List<Tag> saveTags){
         saveTags.forEach(saveTag -> savePostWithTag(post, saveTag));
     }
-    public void updatingPostWithOldTag(Post post, List<Tag> deleteTags){
+    private void updatingPostWithOldTag(Post post, List<Tag> deleteTags){
         deleteTags.forEach(deleteTag -> {
             PostWithTag findPostAndTag = postWithTagRepository.findByPostAndTag(post, deleteTag)
                     .orElseThrow(() -> new IllegalArgumentException("찾을 수 없는 게시글 태그 관계입니다."));
             deletePostWithTag(findPostAndTag);
         });
+    }
+
+    /**
+     * 실제 업데이트가 이뤄지는 함수
+     * 새로 저장, 삭제해야하는 Tag 구분한 뒤, 필요한 로직들 구현
+     * @param updatePost
+     * @param originTagNames
+     * @param newTagNames
+     */
+    @Transactional
+    public void updateAssociationPostAndTag(Post updatePost, List<String> originTagNames, List<String> newTagNames){
+        List<Tag> saveTagsAtPost = findSaveTagInUpdate(originTagNames, newTagNames);
+        log.info("게시글에 새로 저장해야할 태그 목록 조회 완료");
+        List<Tag> deleteTagsAtPost = findDeleteTagInUpdate(originTagNames, newTagNames);
+        log.info("게시글에서 삭제해야할 태그 목록 조회 완료");
+        updatingPostWithNewTag(updatePost, saveTagsAtPost);
+        log.info("새로 저장해야할 게시글 & 태그 연관관계 저장 성공");
+        updatingPostWithOldTag(updatePost, deleteTagsAtPost);
+        log.info("삭제해야할 게시글 & 태그 연관관계 삭제 성공");
+        deleteTagsAtPost.stream()
+                .forEach(deleteTagAtPost -> {
+                    if (findPostWithTagByTag(deleteTagAtPost).size() == 0) // 어떤 태그에 대해서 게시글과 연관관계가 없으면 size = 0
+                        tagService.deleteTag(deleteTagAtPost);
+                });
+        log.info("게시글과 연관관계가 전혀 없는 태그 삭제 완료");
     }
     @Transactional
     public void deletePostWithTag(PostWithTag postWithTag){
