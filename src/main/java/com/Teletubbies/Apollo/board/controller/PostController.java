@@ -35,10 +35,8 @@ public class PostController {
     private final UserService userService;
     private final CommentService commentService;
     @PostMapping("/board")
-    public SavePostResponse registerPost(@RequestBody SavePostRequest request){
-        log.info("컨트롤러 단 진입 완료");
+    public SavePostResponse savePost(@RequestBody SavePostRequest request){
         ApolloUser findUser = userService.getUserById(request.getUserId());
-
         Post post = postService.savePost(findUser, request);
         log.info("게시글 저장 완료");
 
@@ -51,73 +49,53 @@ public class PostController {
         return new SavePostResponse(post.getId(), findUser.getId());
     }
     @GetMapping("/board")
-    public StartBoard findAllPosts(@RequestParam int pageNum){
+    public StartBoard findDataForBoardPage(@RequestParam int pageNum){
         PageRequest pageRequest = PageRequest.of(pageNum - 1, 3, Sort.by("createAt").descending());
         return new StartBoard(postService.findAllPosts(pageRequest), tagService.findAllTag());
     }
     @GetMapping("/tag")
     public List<ConvertTag> findAllTags() {return tagService.findAllTag();}
     @GetMapping("/board/{postId}")
-    public PostDetailResponse findPostDetails(@PathVariable Long postId){
+    public PostWithAllDetailResponse findPostWithAllInformation(@PathVariable Long postId){
         Post findPost = postService.findPostById(postId);
         log.info("게시글 조회 완료");
 
-        List<ConvertTag> tagOfPost = postWithTagService.findPostWithTagByPost(postService.findPostById(postId)).stream()
+        List<ConvertTag> tagOfPost = postWithTagService.findPostWithTagByPost(findPost).stream()
                 .map(postWithTag -> new ConvertTag(postWithTag.getTag().getId(), postWithTag.getTag().getName()))
                 .toList();
         log.info("게시글의 태그 조회 완료, 태그 dto 변환 완료");
 
-        OriginPostResponse postResponse = new OriginPostResponse(findPost.getApolloUser().getId(), findPost.getId(), findPost.getTitle(), findPost.getContent(), tagOfPost, findPost.getCreateAt());
+        PostOnlyPostResponse postResponse = new PostOnlyPostResponse(findPost.getApolloUser().getId(), findPost.getId(), findPost.getTitle(), findPost.getContent(), tagOfPost, findPost.getCreateAt());
         log.info("게시글 dto 변환 완료");
 
-        List<Comment> findComments = commentService.findAllCommentByPost(findPost);
-        log.info("게시글의 댓글 조회 완료");
-        List<CommentInPostResponse> commentResponses = findComments.stream()
+        List<CommentInPostResponse> commentResponses = commentService.findAllCommentByPost(findPost).stream()
                 .map(findComment -> new CommentInPostResponse(findComment.getId(), findComment.getApolloUser().getId(), findComment.getContent(), findComment.getCreateAt()))
                 .toList();
-        log.info("게시글의 댓글 dto 변환 완료");
-        return new PostDetailResponse(postResponse, commentResponses, tagOfPost);
+        log.info("게시글의 댓글 조회 완료, dto 변환 완료");
+        return new PostWithAllDetailResponse(postResponse, commentResponses);
     }
+    /*
+    태그별 post 조회 로직도 만들어야 함!
+     */
     @GetMapping("/board/title/{titleName}")
-    public List<FindPostResponse> findSimilarPostByTitle(@PathVariable String titleName){
-        return postService.findSimilarPostByTitle(titleName);
+    public List<PostNoContentResponse> findSimilarPostByTitle(@PathVariable String titleName){
+        return postService.findSimilarPostByTitle(titleName, Sort.by(Sort.Direction.DESC, "createAt"));
     }
     @GetMapping("board/titleOrContent/{searchString}")
-    public List<FindPostResponse> findSimilarPostByTitleOrContent(@PathVariable String searchString){
-        return postService.findSimilarPostByTitleOrContent(searchString);
+    public List<PostNoContentResponse> findSimilarPostByTitleOrContent(@PathVariable String searchString){
+        return postService.findSimilarPostByTitleOrContent(searchString, Sort.by(Sort.Direction.DESC, "createAt"));
     }
     @PatchMapping("/board/{postId}")
     public UpdatePostResponse updatePost(@PathVariable Long postId, @RequestBody UpdatePostRequest request){
-        Post findPost = postService.findPostById(postId);
-        log.info("게시글 조회 성공");
+        Post updatedPost= postService.updatePost(postService.findPostById(postId), request.getTitle(), request.getContent());
+        log.info("게시글 내용 업데이트 성공");
 
-        Post updatedPost= postService.updatePost(findPost, request.getTitle(), request.getContent());
-        log.info("게시글 업데이트 성공");
+        List<String> originTagNames = postWithTagService.findPostWithTagByPost(updatedPost).stream()
+                .map(findPostWithTag -> findPostWithTag.getTag().getName()).toList();;
+        log.info("게시글에 할당된 태그들 조회 및 dto 변환 성공");
 
-        List<PostWithTag> findPostWithTags = postWithTagService.findPostWithTagByPost(updatedPost);
-        log.info("태그와 게시물 연관 객체 조회 성공");
-
-        List<String> originTagNames =  findPostWithTags.stream()
-                .map(findPostWithTag -> findPostWithTag.getTag().getName()).toList();
-        log.info("기존 게시글에 매핑된 태그 조회 성공");
-
-        // 유지 되어야 하는 태그는 건들 필요가 없음
-        List<Tag> saveTagInUpdate = postWithTagService.findSaveTagInUpdate(originTagNames, request.getTagNames());
-        log.info("저장되어야 하는 태그 목록 조회 완료");
-        List<Tag> deleteTagInUpdate = postWithTagService.findDeleteTagInUpdate(originTagNames, request.getTagNames());
-        log.info("삭제 되어야 하는 태그 목록 조회 완료");
-        log.info("게시물의 기존 태그와 수정된 태그 parsing 성공");
-
-        postWithTagService.updatingPostWithOldTag(updatedPost, deleteTagInUpdate);
-        log.info("게시글에 더 이상 필요없는 태그 연관관계 삭제 완료");
-
-        deleteTagInUpdate.forEach(deleteTag -> {
-                            if (postWithTagService.findPostWithTagByTag(deleteTag).size() == 0)
-                                tagService.deleteTag(deleteTag);}
-        ); log.info("게시글과 연관 관계가 전혀 없는 태그 삭제 완료");
-
-        postWithTagService.updatingPostWithNewTag(updatedPost, saveTagInUpdate);
-        log.info("게시글에 새로 필요한 태그 연관관계 저장");
+        postWithTagService.updateAssociationPostAndTag(updatedPost, originTagNames, request.getTagNames());
+        log.info("게시글 tag 연관관계 재정의, 연관관계 전혀 없는 태그 삭제 완료");
 
         return new UpdatePostResponse(updatedPost.getId());
     }

@@ -2,11 +2,9 @@ package com.Teletubbies.Apollo.board.service;
 
 import com.Teletubbies.Apollo.auth.domain.ApolloUser;
 import com.Teletubbies.Apollo.board.domain.Post;
-import com.Teletubbies.Apollo.board.domain.PostWithTag;
 import com.Teletubbies.Apollo.board.domain.Tag;
-import com.Teletubbies.Apollo.board.dto.post.request.DeletePostRequest;
 import com.Teletubbies.Apollo.board.dto.post.request.SavePostRequest;
-import com.Teletubbies.Apollo.board.dto.post.response.FindPostResponse;
+import com.Teletubbies.Apollo.board.dto.post.response.PostNoContentResponse;
 import com.Teletubbies.Apollo.board.dto.tag.ConvertTag;
 import com.Teletubbies.Apollo.board.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -38,9 +35,9 @@ public class PostService {
         return postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글 아이디입니다."));
     }
-    public List<FindPostResponse> findAllPosts(PageRequest pageRequest){
+    public List<PostNoContentResponse> findAllPosts(PageRequest pageRequest){
         return postRepository.findAll(pageRequest).stream()
-                .map(findPost -> new FindPostResponse(
+                .map(findPost -> new PostNoContentResponse(
                         findPost.getApolloUser().getId(),
                         findPost.getId(),
                         findPost.getTitle(),
@@ -51,10 +48,10 @@ public class PostService {
                 .toList();
 
     }
-    public List<FindPostResponse> findSimilarPostByTitle(String title){
-        List<Post> findPosts = postRepository.findByTitleContainingIgnoreCase(title);
+    public List<PostNoContentResponse> findSimilarPostByTitle(String title, Sort sortByNewCreated){
+        List<Post> findPosts = postRepository.findByTitleContainingIgnoreCase(title, sortByNewCreated);
         return findPosts.stream()
-                .map(findPost -> new FindPostResponse(
+                .map(findPost -> new PostNoContentResponse(
                         findPost.getApolloUser().getId(),
                         findPost.getId(),
                         findPost.getTitle(),
@@ -65,10 +62,10 @@ public class PostService {
                 .toList();
 
     }
-    public List<FindPostResponse> findSimilarPostByTitleOrContent(String searchString){
-        List<Post> findPosts = postRepository.findByContentContainingIgnoreCaseOrTitleContainingIgnoreCase(searchString, searchString);
+    public List<PostNoContentResponse> findSimilarPostByTitleOrContent(String searchString, Sort sortByLastCreated){
+        List<Post> findPosts = postRepository.findByContentContainingIgnoreCaseOrTitleContainingIgnoreCase(searchString, searchString, sortByLastCreated);
         return findPosts.stream()
-                .map(findPost -> new FindPostResponse(
+                .map(findPost -> new PostNoContentResponse(
                         findPost.getApolloUser().getId(),
                         findPost.getId(),
                         findPost.getTitle(),
