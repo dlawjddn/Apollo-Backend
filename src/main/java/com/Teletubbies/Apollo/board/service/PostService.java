@@ -10,6 +10,7 @@ import com.Teletubbies.Apollo.board.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,8 +48,8 @@ public class PostService {
                 .toList();
 
     }
-    public List<PostNoContentResponse> findSimilarPostByTitle(String title){
-        List<Post> findPosts = postRepository.findByTitleContainingIgnoreCase(title);
+    public List<PostNoContentResponse> findSimilarPostByTitle(String title, Sort sortByNewCreated){
+        List<Post> findPosts = postRepository.findByTitleContainingIgnoreCase(title, sortByNewCreated);
         return findPosts.stream()
                 .map(findPost -> new PostNoContentResponse(
                         findPost.getApolloUser().getId(),
@@ -61,8 +62,8 @@ public class PostService {
                 .toList();
 
     }
-    public List<PostNoContentResponse> findSimilarPostByTitleOrContent(String searchString){
-        List<Post> findPosts = postRepository.findByContentContainingIgnoreCaseOrTitleContainingIgnoreCase(searchString, searchString);
+    public List<PostNoContentResponse> findSimilarPostByTitleOrContent(String searchString, Sort sortByLastCreated){
+        List<Post> findPosts = postRepository.findByContentContainingIgnoreCaseOrTitleContainingIgnoreCase(searchString, searchString, sortByLastCreated);
         return findPosts.stream()
                 .map(findPost -> new PostNoContentResponse(
                         findPost.getApolloUser().getId(),
