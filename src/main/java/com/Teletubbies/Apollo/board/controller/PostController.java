@@ -79,11 +79,11 @@ public class PostController {
      */
     @GetMapping("/board/title/{titleName}")
     public List<PostNoContentResponse> findSimilarPostByTitle(@PathVariable String titleName){
-        return postService.findSimilarPostByTitle(titleName);
+        return postService.findSimilarPostByTitle(titleName, Sort.by(Sort.Direction.DESC, "createAt"));
     }
     @GetMapping("board/titleOrContent/{searchString}")
     public List<PostNoContentResponse> findSimilarPostByTitleOrContent(@PathVariable String searchString){
-        return postService.findSimilarPostByTitleOrContent(searchString);
+        return postService.findSimilarPostByTitleOrContent(searchString, Sort.by(Sort.Direction.DESC, "createAt"));
     }
     @PatchMapping("/board/{postId}")
     public UpdatePostResponse updatePost(@PathVariable Long postId, @RequestBody UpdatePostRequest request){
