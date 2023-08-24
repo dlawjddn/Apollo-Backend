@@ -24,4 +24,16 @@ public class Comment {
     private Date createAt;
     private Date updateAt;
 
+    public Comment(ApolloUser apolloUser, Post post, String content) {
+        this.apolloUser = apolloUser;
+        this.post = post;
+        this.content = content;
+        this.createAt = new Date();
+        this.updateAt = new Date();
+    }
+    public Comment updateComment(String content){
+        this.content = content;
+        this.updateAt = new Date();
+        return this;
+    }
 }

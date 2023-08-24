@@ -15,7 +15,7 @@ public class PostWithTag {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "post_tag_association_id")
     private Long id;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "post_id")
     private Post post;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -25,9 +25,5 @@ public class PostWithTag {
     public PostWithTag(Post post, Tag tag) {
         this.post = post;
         this.tag = tag;
-    }
-    public PostWithTag changeTag(Tag tag){
-        this.tag = tag;
-        return this;
     }
 }

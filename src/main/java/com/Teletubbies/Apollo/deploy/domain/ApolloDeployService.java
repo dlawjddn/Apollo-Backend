@@ -4,6 +4,7 @@ import com.Teletubbies.Apollo.auth.domain.ApolloUser;
 import com.Teletubbies.Apollo.auth.domain.Repo;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
@@ -11,11 +12,12 @@ import java.util.Date;
 @Entity
 @Getter @Setter
 @Table(name = "service")
+@NoArgsConstructor
 public class ApolloDeployService {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -48,5 +50,13 @@ public class ApolloDeployService {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = new Date();
+    }
+
+    public ApolloDeployService(ApolloUser user, Repo repo, String stackName, String endpoint, String stackType) {
+        this.apolloUser = user;
+        this.repo = repo;
+        this.stackName = stackName;
+        this.endpoint = endpoint;
+        this.stackType = stackType;
     }
 }

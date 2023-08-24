@@ -1,13 +1,12 @@
-package com.Teletubbies.Apollo.board.dto.request;
+package com.Teletubbies.Apollo.board.dto.post.request;
 
 import lombok.Data;
 
 import java.util.List;
 
 @Data
-public class UpdatePostRequest {
+public class SavePostRequest {
     private Long userId;
-    private Long postId;
     private String title;
     private String content;
     private List<String> tagNames;
