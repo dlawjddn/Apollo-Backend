@@ -15,6 +15,7 @@ import com.Teletubbies.Apollo.deploy.dto.response.PostServerDeployResponse;
 import com.Teletubbies.Apollo.deploy.repository.AwsServiceRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
 import software.amazon.awssdk.services.cloudformation.model.*;
 import software.amazon.awssdk.services.ecr.EcrClient;
@@ -96,6 +97,7 @@ public class AWSCloudFormationServerService {
                 .build();
     }
 
+    @Transactional
     public void deleteServerStack(Long userId, String stackName) {
         CloudFormationClient cfClient = awsClientComponent.createCFClient(userId);
         ElasticLoadBalancingV2Client elbClient = awsClientComponent.createELBClient(userId);
@@ -105,6 +107,12 @@ public class AWSCloudFormationServerService {
         String ecrRepositoryName = getECRRepository(cfClient, stackName);
         String bucketName = getBucketName(cfClient, stackName);
         String loadBalancerArn = getLoadBalancerArnFromStack(cfClient, stackName);
+
+        ApolloDeployService service = awsServiceRepository.findByApolloUserAndStackName(user, stackName);
+        if (service != null) {
+            awsServiceRepository.delete(service);
+            log.info("서비스 삭제 완료: " + service);
+        }
 
         if (loadBalancerArn != null) {
             deleteTargetGroupsAssociatedWithStack(elbClient, loadBalancerArn);
@@ -125,10 +133,6 @@ public class AWSCloudFormationServerService {
             log.info("스택 삭제 완료");
         } else {
             log.info("버킷이 존재하지 않습니다.");
-        }
-        ApolloDeployService service = awsServiceRepository.findByApolloUserAndStackName(user, stackName);
-        if (service != null) {
-            awsServiceRepository.delete(service);
         }
     }
 
