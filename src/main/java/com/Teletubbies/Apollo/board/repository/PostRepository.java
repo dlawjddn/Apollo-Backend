@@ -12,6 +12,8 @@ import java.util.Optional;
 public interface PostRepository extends JpaRepository<Post, Long> {
     Optional<Post> findById(Long id);
     Page<Post> findAll(Pageable pageable);
-    List<Post> findByContentContainingIgnoreCaseOrTitleContainingIgnoreCase(String title, String content, Sort sort);
-    List<Post> findByTitleContainingIgnoreCase(String title, Sort sort);
+    Page<Post> findByContentContainingIgnoreCaseOrTitleContainingIgnoreCase(String title, String content, Pageable pageable);
+    Long countByContentContainingIgnoreCaseOrTitleContainingIgnoreCase(String title, String content);
+    Page<Post> findByTitleContainingIgnoreCase(String title, Pageable pageable);
+    Long countByTitleContainingIgnoreCase(String title);
 }
