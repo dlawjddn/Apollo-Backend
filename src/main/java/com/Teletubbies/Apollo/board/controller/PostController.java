@@ -22,6 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
+import javax.naming.directory.SearchResult;
 import java.util.List;
 
 @Slf4j
@@ -50,8 +51,8 @@ public class PostController {
     }
     @GetMapping("/board")
     public StartBoard findDataForBoardPage(@RequestParam int pageNum){
-        PageRequest pageRequest = PageRequest.of(pageNum - 1, 3, Sort.by("createAt").descending());
-        return new StartBoard(postService.countPosts(), postService.findAllPosts(pageRequest), tagService.findAllTag());
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 20, Sort.by("createAt").descending());
+        return new StartBoard(postService.countAllPosts(), postService.findAllPosts(pageRequest), tagService.findAllTag());
     }
     @GetMapping("/tag")
     public List<ConvertTag> findAllTags() {return tagService.findAllTag();}
@@ -87,13 +88,15 @@ public class PostController {
     /*
     태그별 post 조회 로직도 만들어야 함!
      */
-    @GetMapping("/board/title/{titleName}")
-    public List<PostNoContentResponse> findSimilarPostByTitle(@PathVariable String titleName){
-        return postService.findSimilarPostByTitle(titleName, Sort.by(Sort.Direction.DESC, "createAt"));
+    @GetMapping("/board/title/{titleName}/{pageNum}")
+    public PostSearchResponse findSimilarPostByTitle(@PathVariable String titleName, @PathVariable int pageNum){
+        PageRequest sortPageByNewCreated = PageRequest.of(pageNum - 1, 20, Sort.by(Sort.Direction.DESC, "createAt"));
+        return new PostSearchResponse(postService.countPostsHaveSimilarTitle(titleName), postService.findSimilarPostByTitle(titleName, sortPageByNewCreated));
     }
-    @GetMapping("board/titleOrContent/{searchString}")
-    public List<PostNoContentResponse> findSimilarPostByTitleOrContent(@PathVariable String searchString){
-        return postService.findSimilarPostByTitleOrContent(searchString, Sort.by(Sort.Direction.DESC, "createAt"));
+    @GetMapping("board/titleOrContent/{searchString}/{pageNum}")
+    public PostSearchResponse findSimilarPostByTitleOrContent(@PathVariable String searchString, @PathVariable int pageNum){
+        PageRequest sortPageByNewCreated = PageRequest.of(pageNum - 1, 20, Sort.by(Sort.Direction.DESC, "createAt"));
+        return new PostSearchResponse(postService.countPostsHaveSimilarTitleOrSimilarContent(searchString),postService.findSimilarPostByTitleOrContent(searchString, sortPageByNewCreated));
     }
     @PatchMapping("/board/{postId}")
     public UpdatePostResponse updatePost(@PathVariable Long postId, @RequestBody UpdatePostRequest request){
