@@ -6,10 +6,12 @@ import lombok.Data;
 import java.util.List;
 @Data
 public class StartBoard {
-    List<PostNoContentResponse> posts;
-    List<ConvertTag> tags;
+    private Long count;
+    private List<PostNoContentResponse> posts;
+    private List<ConvertTag> tags;
 
-    public StartBoard(List<PostNoContentResponse> posts, List<ConvertTag> tags) {
+    public StartBoard(Long count, List<PostNoContentResponse> posts, List<ConvertTag> tags) {
+        this.count = count;
         this.posts = posts;
         this.tags = tags;
     }
