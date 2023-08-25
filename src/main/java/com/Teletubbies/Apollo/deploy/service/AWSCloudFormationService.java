@@ -6,6 +6,7 @@ import com.Teletubbies.Apollo.deploy.dto.response.GetDeployStackResponse;
 import com.Teletubbies.Apollo.deploy.repository.AwsServiceRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
 import software.amazon.awssdk.services.cloudformation.model.DescribeStackResourcesRequest;
 import software.amazon.awssdk.services.cloudformation.model.StackResource;
@@ -29,6 +30,7 @@ public class AWSCloudFormationService {
         this.awsServiceRepository = awsServiceRepository;
     }
 
+    @Transactional
     public List<GetDeployStackResponse> getDeployStacks(Long userId) {
         List<GetDeployStackResponse> responses = new ArrayList<>();
         List<ApolloDeployService> services = awsServiceRepository.findByApolloUserId(userId);
@@ -68,7 +70,6 @@ public class AWSCloudFormationService {
                 return false;
             }
         }
-
         return true;
     }
 }

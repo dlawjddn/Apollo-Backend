@@ -93,20 +93,24 @@ public class AWSCloudFormationClientService {
                 .build();
     }
 
+    @Transactional
     public void deleteClientStack(Long userId, String stackName) {
         CloudFormationClient cfClient = awsClientComponent.createCFClient(userId);
         S3Client s3Client = awsClientComponent.createS3Client(userId);
         ApolloUser user = userService.getUserById(userId);
         String bucketName = getBucketName(cfClient, stackName);
+
+        ApolloDeployService apolloDeployService = awsServiceRepository.findByApolloUserAndStackName(user, stackName);
+        if (apolloDeployService != null) {
+            awsServiceRepository.delete(apolloDeployService);
+            log.info("서비스 삭제 완료: " + apolloDeployService);
+        }
+
         if (bucketName != null) {
             deleteS3Bucket(s3Client, bucketName);
             deleteCloudFormationStack(cfClient, stackName);
         } else {
             log.info("버킷이 존재하지 않습니다.");
-        }
-        ApolloDeployService apolloDeployService = awsServiceRepository.findByApolloUserAndStackName(user, stackName);
-        if (apolloDeployService != null) {
-            awsServiceRepository.delete(apolloDeployService);
         }
     }
 
