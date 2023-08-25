@@ -51,7 +51,7 @@ public class PostController {
     @GetMapping("/board")
     public StartBoard findDataForBoardPage(@RequestParam int pageNum){
         PageRequest pageRequest = PageRequest.of(pageNum - 1, 3, Sort.by("createAt").descending());
-        return new StartBoard(postService.findAllPosts(pageRequest), tagService.findAllTag());
+        return new StartBoard(postService.countPosts(), postService.findAllPosts(pageRequest), tagService.findAllTag());
     }
     @GetMapping("/tag")
     public List<ConvertTag> findAllTags() {return tagService.findAllTag();}
@@ -65,11 +65,21 @@ public class PostController {
                 .toList();
         log.info("게시글의 태그 조회 완료, 태그 dto 변환 완료");
 
-        PostOnlyPostResponse postResponse = new PostOnlyPostResponse(findPost.getApolloUser().getId(), findPost.getId(), findPost.getTitle(), findPost.getContent(), tagOfPost, findPost.getCreateAt());
+        PostOnlyPostResponse postResponse = new PostOnlyPostResponse(
+                findPost.getApolloUser().getId(),
+                findPost.getId(),
+                findPost.getTitle(),
+                findPost.getContent(),
+                tagOfPost,
+                findPost.getCreateAt());
         log.info("게시글 dto 변환 완료");
 
         List<CommentInPostResponse> commentResponses = commentService.findAllCommentByPost(findPost).stream()
-                .map(findComment -> new CommentInPostResponse(findComment.getId(), findComment.getApolloUser().getId(), findComment.getContent(), findComment.getCreateAt()))
+                .map(findComment -> new CommentInPostResponse(
+                        findComment.getId(),
+                        findComment.getApolloUser().getId(),
+                        findComment.getContent(),
+                        findComment.getCreateAt()))
                 .toList();
         log.info("게시글의 댓글 조회 완료, dto 변환 완료");
         return new PostWithAllDetailResponse(postResponse, commentResponses);
