@@ -31,6 +31,9 @@ public class PostService {
         return postRepository.save(new Post(apolloUser, savePostRequest.getTitle(), savePostRequest.getContent()));
     }
     //read
+    public Long countPosts(){
+        return postRepository.count();
+    }
     public Post findPostById(Long id){
         return postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글 아이디입니다."));
