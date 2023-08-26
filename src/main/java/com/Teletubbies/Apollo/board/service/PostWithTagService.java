@@ -23,6 +23,9 @@ public class PostWithTagService {
     public Long savePostWithTag(Post post, Tag tag){
         return postWithTagRepository.save(new PostWithTag(post, tag)).getId();
     }
+    public Long countAssociationByTag(Tag tag){
+        return postWithTagRepository.countByTag(tag);
+    }
     public List<PostWithTag> findPostWithTagByPost(Post post){
         return postWithTagRepository.findAllByPost(post);
     }
@@ -96,7 +99,7 @@ public class PostWithTagService {
         log.info("삭제해야할 게시글 & 태그 연관관계 삭제 성공");
         deleteTagsAtPost.stream()
                 .forEach(deleteTagAtPost -> {
-                    if (findPostWithTagByTag(deleteTagAtPost).size() == 0) // 어떤 태그에 대해서 게시글과 연관관계가 없으면 size = 0
+                    if (countAssociationByTag(deleteTagAtPost) == 0L) // 어떤 태그에 대해서 게시글과 연관관계가 없으면 size = 0
                         tagService.deleteTag(deleteTagAtPost);
                 });
         log.info("게시글과 연관관계가 전혀 없는 태그 삭제 완료");
