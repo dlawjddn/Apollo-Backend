@@ -12,4 +12,5 @@ public interface PostWithTagRepository extends JpaRepository<PostWithTag, Long> 
     List<PostWithTag> findAllByTag(Tag tag);
     List<PostWithTag> findAllByPost(Post post);
     Optional<PostWithTag> findByPostAndTag(Post post, Tag tag);
+    Long countByTag(Tag tag);
 }

@@ -111,7 +111,7 @@ public class PostService {
 
         tags.stream()
                 .forEach(tag -> {
-                    if (postWithTagService.findPostWithTagByTag(tag).size() == 0) // 어떤 태그와 연관된 게시글이 없는 경우 -> 태그도 삭제
+                    if (postWithTagService.countAssociationByTag(tag) == 0L) // 어떤 태그와 연관된 게시글이 없는 경우 -> 태그도 삭제
                         tagService.deleteTag(tag);
                 });
         log.info("태그에 해당된 게시글 확인 후 삭제 완료");
