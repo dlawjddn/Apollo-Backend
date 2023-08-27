@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 public class PostNoContentResponse {
     private Long userId;
-    private String nickname;
+    private String userLogin;
     private Long postId;
     private String title;
     private List<ConvertTag> tags;
@@ -17,7 +17,7 @@ public class PostNoContentResponse {
 
     public PostNoContentResponse(Long userId, String userLogin, Long postId, String title, List<ConvertTag> tags, Date createAt) {
         this.userId = userId;
-        this.nickname = userLogin;
+        this.userLogin = userLogin;
         this.postId = postId;
         this.title = title;
         this.tags = tags;
