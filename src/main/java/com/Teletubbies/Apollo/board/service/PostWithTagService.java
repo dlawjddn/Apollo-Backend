@@ -38,6 +38,7 @@ public class PostWithTagService {
         return postWithTagRepository.findPostWithTagByTag(tag, pageRequest).stream()
                 .map(postWithTag -> new PostNoContentResponse(
                         postWithTag.getPost().getApolloUser().getId(),
+                        postWithTag.getPost().getApolloUser().getLogin(),
                         postWithTag.getPost().getId(),
                         postWithTag.getPost().getTitle(),
                         findPostWithTagByPost(postWithTag.getPost()).stream()

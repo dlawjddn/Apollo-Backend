@@ -51,6 +51,7 @@ public class PostService {
         return postRepository.findAll(pageRequest).stream()
                 .map(findPost -> new PostNoContentResponse(
                         findPost.getApolloUser().getId(),
+                        findPost.getApolloUser().getLogin(),
                         findPost.getId(),
                         findPost.getTitle(),
                         postWithTagService.findPostWithTagByPost(findPost).stream()
@@ -65,6 +66,7 @@ public class PostService {
         return findPosts.stream()
                 .map(findPost -> new PostNoContentResponse(
                         findPost.getApolloUser().getId(),
+                        findPost.getApolloUser().getLogin(),
                         findPost.getId(),
                         findPost.getTitle(),
                         postWithTagService.findPostWithTagByPost(findPost).stream()
@@ -79,6 +81,7 @@ public class PostService {
         return findPosts.stream()
                 .map(findPost -> new PostNoContentResponse(
                         findPost.getApolloUser().getId(),
+                        findPost.getApolloUser().getLogin(),
                         findPost.getId(),
                         findPost.getTitle(),
                         postWithTagService.findPostWithTagByPost(findPost).stream()

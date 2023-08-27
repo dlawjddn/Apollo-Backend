@@ -9,14 +9,16 @@ import java.util.List;
 @Data
 public class PostOnlyPostResponse {
     private Long userId;
+    private String nickname;
     private Long postId;
     private String title;
     private String content;
     private List<ConvertTag> tags;
     private Date createAt;
 
-    public PostOnlyPostResponse(Long userId, Long postId, String title, String content, List<ConvertTag> tags, Date createAt) {
+    public PostOnlyPostResponse(Long userId, String userLogin, Long postId, String title, String content, List<ConvertTag> tags, Date createAt) {
         this.userId = userId;
+        this.nickname = userLogin;
         this.postId = postId;
         this.title = title;
         this.content = content;
