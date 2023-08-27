@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Getter
@@ -20,6 +21,8 @@ public class Post {
     private String title;
     @Column(columnDefinition = "LONGTEXT")
     private String content;
+    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
+    private List<Comment> comments;
     private Date createAt;
     private Date updateAt;
 
