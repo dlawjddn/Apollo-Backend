@@ -40,9 +40,9 @@ public class CommentController {
                         myComment.getUpdateAt()))
                 .toList();
     }
-    @PatchMapping("/comment")
-    public UpdateCommentResponse updateComment(@RequestBody UpdateCommentRequest request){
-        Comment updateComment = commentService.updateComment(request);
+    @PatchMapping("/comment/{commentId}")
+    public UpdateCommentResponse updateComment(@PathVariable Long commentId, @RequestBody UpdateCommentRequest request){
+        Comment updateComment = commentService.updateComment(commentId, request);
         log.info("댓글 수정 완료");
         return new UpdateCommentResponse(updateComment.getId(), updateComment.getContent());
     }
