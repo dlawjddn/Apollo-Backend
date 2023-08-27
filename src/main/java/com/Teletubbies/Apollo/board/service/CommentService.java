@@ -36,8 +36,8 @@ public class CommentService {
         return commentRepository.findAllByApolloUser(findUser);
     }
     @Transactional
-    public Comment updateComment(UpdateCommentRequest request){
-        Comment findComment = commentRepository.findById(request.getCommentId())
+    public Comment updateComment(Long commentId, UpdateCommentRequest request){
+        Comment findComment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글 입니다."));
         log.info("해당 댓글 객체 가져오기 성공");
         if (!findComment.getApolloUser().getId().equals(request.getUserId()))
