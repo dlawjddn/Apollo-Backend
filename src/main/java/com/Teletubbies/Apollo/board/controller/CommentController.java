@@ -46,8 +46,8 @@ public class CommentController {
         log.info("댓글 수정 완료");
         return new UpdateCommentResponse(updateComment.getId(), updateComment.getContent());
     }
-    @DeleteMapping("/comment")
-    public String deleteComment(@RequestBody DeleteCommentRequest request){
-        return commentService.deleteComment(request);
+    @DeleteMapping("/comment/{commentId}")
+    public String deleteComment(@PathVariable Long commentId, @RequestBody DeleteCommentRequest request){
+        return commentService.deleteComment(commentId, request);
     }
 }

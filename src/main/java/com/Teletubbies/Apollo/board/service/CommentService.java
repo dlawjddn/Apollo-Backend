@@ -46,8 +46,8 @@ public class CommentService {
         return findComment.updateComment(request.getContent());
     }
     @Transactional
-    public String deleteComment(DeleteCommentRequest request){
-        Comment findComment = commentRepository.findById(request.getCommentId())
+    public String deleteComment(Long commentId, DeleteCommentRequest request){
+        Comment findComment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글입니다."));
         if (!findComment.getApolloUser().getId().equals(request.getUserId()))
             throw new IllegalArgumentException("댓글 작성자와 수정자가 일치하지 않습니다.");
