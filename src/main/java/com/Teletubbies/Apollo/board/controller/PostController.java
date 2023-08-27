@@ -85,9 +85,13 @@ public class PostController {
         log.info("게시글의 댓글 조회 완료, dto 변환 완료");
         return new PostWithAllDetailResponse(postResponse, commentResponses);
     }
-    /*
-    태그별 post 조회 로직도 만들어야 함!
-     */
+    @GetMapping("/board/associate-with")
+    public PostSearchResponse findAllPostByTag(@RequestParam Long tagId, @RequestParam int pageNum){
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 20, Sort.by(Sort.Direction.DESC, "post"));
+        Tag findTag = tagService.findByTagId(tagId);
+        return new PostSearchResponse(postWithTagService.countAssociationByTag(findTag),
+                postWithTagService.findPagingPostWithTagByTag(findTag, pageRequest));
+    }
     @GetMapping("/board/title/{titleName}/{pageNum}")
     public PostSearchResponse findSimilarPostByTitle(@PathVariable String titleName, @PathVariable int pageNum){
         PageRequest sortPageByNewCreated = PageRequest.of(pageNum - 1, 20, Sort.by(Sort.Direction.DESC, "createAt"));

@@ -3,9 +3,13 @@ package com.Teletubbies.Apollo.board.service;
 import com.Teletubbies.Apollo.board.domain.Post;
 import com.Teletubbies.Apollo.board.domain.PostWithTag;
 import com.Teletubbies.Apollo.board.domain.Tag;
+import com.Teletubbies.Apollo.board.dto.post.response.PostNoContentResponse;
+import com.Teletubbies.Apollo.board.dto.tag.ConvertTag;
 import com.Teletubbies.Apollo.board.repository.PostWithTagRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +34,18 @@ public class PostWithTagService {
         return postWithTagRepository.findAllByPost(post);
     }
     public List<PostWithTag> findPostWithTagByTag(Tag tag){return postWithTagRepository.findAllByTag(tag);}
+    public List<PostNoContentResponse> findPagingPostWithTagByTag(Tag tag, PageRequest pageRequest){
+        return postWithTagRepository.findPostWithTagByTag(tag, pageRequest).stream()
+                .map(postWithTag -> new PostNoContentResponse(
+                        postWithTag.getPost().getApolloUser().getId(),
+                        postWithTag.getPost().getId(),
+                        postWithTag.getPost().getTitle(),
+                        findPostWithTagByPost(postWithTag.getPost()).stream()
+                                .map(find -> new ConvertTag(find.getTag().getId(), find.getTag().getName()))
+                                .toList(),
+                        postWithTag.getPost().getCreateAt()))
+                .toList();
+    }
 
     /**
      * post와 tag의 연관관계 업데이트를 위한 함수들
