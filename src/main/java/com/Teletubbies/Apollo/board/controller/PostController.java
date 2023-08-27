@@ -47,7 +47,7 @@ public class PostController {
         tags.forEach(tag -> postWithTagService.savePostWithTag(post, tag));
         log.info("태그와 게시물 연관 저장 완료");
 
-        return new SavePostResponse(post.getId(), findUser.getId());
+        return new SavePostResponse(post.getId(), findUser.getId(), findUser.getLogin());
     }
     @GetMapping("/board")
     public StartBoard findDataForBoardPage(@RequestParam int pageNum){
@@ -68,6 +68,7 @@ public class PostController {
 
         PostOnlyPostResponse postResponse = new PostOnlyPostResponse(
                 findPost.getApolloUser().getId(),
+                findPost.getApolloUser().getLogin(),
                 findPost.getId(),
                 findPost.getTitle(),
                 findPost.getContent(),
@@ -118,6 +119,7 @@ public class PostController {
     }
     @DeleteMapping("/board/{postId}")
     public String deletePost(@PathVariable Long postId, @RequestBody DeletePostRequest request){
+        log.info("postId: " + postId);
         return postService.deletePost(postId, request.getUserId());
     }
 }
