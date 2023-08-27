@@ -45,6 +45,10 @@ public class TagService {
     public boolean existsByTagName(String tagName){
         return tagRepository.existsByName(tagName);
     }
+    public Tag findByTagId(Long id){
+        return tagRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 태그 ID는 존재하지 않습니다."));
+    }
     public Tag findByTagName(String tagName){
         return tagRepository.findByName(tagName)
                 .orElseThrow(() -> new IllegalArgumentException("해당 이름에 맞는 태그가 없습니다."));
