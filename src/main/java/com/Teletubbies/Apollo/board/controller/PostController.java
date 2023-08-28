@@ -2,16 +2,13 @@ package com.Teletubbies.Apollo.board.controller;
 
 import com.Teletubbies.Apollo.auth.domain.ApolloUser;
 import com.Teletubbies.Apollo.auth.service.UserService;
-import com.Teletubbies.Apollo.board.domain.Comment;
 import com.Teletubbies.Apollo.board.domain.Post;
-import com.Teletubbies.Apollo.board.domain.PostWithTag;
 import com.Teletubbies.Apollo.board.dto.comment.response.CommentInPostResponse;
 import com.Teletubbies.Apollo.board.dto.post.request.DeletePostRequest;
 import com.Teletubbies.Apollo.board.dto.post.request.SavePostRequest;
 import com.Teletubbies.Apollo.board.dto.post.request.UpdatePostRequest;
 import com.Teletubbies.Apollo.board.dto.post.response.*;
 import com.Teletubbies.Apollo.board.dto.tag.ConvertTag;
-import com.Teletubbies.Apollo.board.service.CommentService;
 import com.Teletubbies.Apollo.board.service.PostService;
 import com.Teletubbies.Apollo.board.domain.Tag;
 import com.Teletubbies.Apollo.board.service.PostWithTagService;
@@ -22,7 +19,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
-import javax.naming.directory.SearchResult;
 import java.util.List;
 
 @Slf4j
@@ -34,7 +30,6 @@ public class PostController {
     private final TagService tagService;
     private final PostWithTagService postWithTagService;
     private final UserService userService;
-    private final CommentService commentService;
     @PostMapping("/board")
     public SavePostResponse savePost(@RequestBody SavePostRequest request){
         ApolloUser findUser = userService.getUserById(request.getUserId());
@@ -61,29 +56,18 @@ public class PostController {
         Post findPost = postService.findPostById(postId);
         log.info("게시글 조회 완료");
 
+        ApolloUser writer = findPost.getApolloUser();
         List<ConvertTag> tagOfPost = postWithTagService.findPostWithTagByPost(findPost).stream()
-                .map(postWithTag -> new ConvertTag(postWithTag.getTag().getId(), postWithTag.getTag().getName()))
+                .map(association -> new ConvertTag(association.getTag().getId(), association.getTag().getName()))
                 .toList();
-        log.info("게시글의 태그 조회 완료, 태그 dto 변환 완료");
+        log.info("게시글 연관 태그 조회 성공, 태그 dto 변환 성공");
 
-        PostOnlyPostResponse postResponse = new PostOnlyPostResponse(
-                findPost.getApolloUser().getId(),
-                findPost.getApolloUser().getLogin(),
-                findPost.getId(),
-                findPost.getTitle(),
-                findPost.getContent(),
-                tagOfPost,
-                findPost.getCreateAt());
-        log.info("게시글 dto 변환 완료");
-
-        List<CommentInPostResponse> commentResponses = commentService.findAllCommentByPost(findPost).stream()
-                .map(findComment -> new CommentInPostResponse(
-                        findComment.getId(),
-                        findComment.getApolloUser().getId(),
-                        findComment.getContent(),
-                        findComment.getCreateAt()))
+        List<CommentInPostResponse> commentResponses = findPost.getComments().stream()
+                .map(comment -> new CommentInPostResponse(comment.getId(), comment.getApolloUser().getId(), comment.getContent(), comment.getCreateAt()))
                 .toList();
-        log.info("게시글의 댓글 조회 완료, dto 변환 완료");
+        PostOnlyPostResponse postResponse =  new PostOnlyPostResponse(writer.getId(), writer.getLogin(), findPost.getId(), findPost.getTitle(), findPost.getContent(), tagOfPost, findPost.getCreateAt());
+        log.info("게시글 연관 댓글 조회 성공, 댓글 dto 변환 성공");
+
         return new PostWithAllDetailResponse(postResponse, commentResponses);
     }
     @GetMapping("/board/associate-with")
