@@ -19,8 +19,6 @@ public class Repo {
     private String repoName;
     private String repoUrl;
     private String ownerLogin;
-    @OneToOne(mappedBy = "repo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private ApolloDeployService service;
 
     public Repo(RepoInfoResponse response) {
         this.id = response.getId();

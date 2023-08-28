@@ -2,6 +2,7 @@ package com.Teletubbies.Apollo.deploy.controller;
 
 import com.Teletubbies.Apollo.auth.service.UserService;
 import com.Teletubbies.Apollo.deploy.dto.request.DeleteClientDeployRequest;
+import com.Teletubbies.Apollo.deploy.dto.request.DeleteServerDeployRequest;
 import com.Teletubbies.Apollo.deploy.dto.request.PostClientDeployRequest;
 import com.Teletubbies.Apollo.deploy.dto.request.PostServerDeployRequest;
 import com.Teletubbies.Apollo.deploy.dto.response.*;
@@ -24,7 +25,6 @@ import java.util.List;
 public class AWSCloudFormationController {
     private final AWSCloudFormationClientService awsCloudformationClientService;
     private final AWSCloudFormationServerService awsCloudFormationServerService;
-    private final UserService userService;
     private final AWSCloudFormationService awsCloudFormationService;
 
     @Operation(summary = "Client stack 생성", description = "CloudFormation을 이용하여 Client stack을 생성한다.")
@@ -42,8 +42,7 @@ public class AWSCloudFormationController {
             @PathVariable Long userId,
             @RequestBody DeleteClientDeployRequest request
     ) {
-        String repoName = request.getRepoName();
-        awsCloudformationClientService.deleteClientStack(userId, repoName);
+        awsCloudformationClientService.deleteClientStack(userId, request);
         DeleteClientDeployResponse response = new DeleteClientDeployResponse();
         response.setContent("Client stack is deleted successfully");
         return response;
@@ -63,10 +62,9 @@ public class AWSCloudFormationController {
     @DeleteMapping("/cloudformation/{userId}/server")
     public DeleteServerDeployResponse deleteServerStack(
             @PathVariable Long userId,
-            @RequestBody DeleteClientDeployRequest request
+            @RequestBody DeleteServerDeployRequest request
     ) {
-        String repoName = request.getRepoName();
-        awsCloudFormationServerService.deleteServerStack(userId, repoName);
+        awsCloudFormationServerService.deleteServerStack(userId, request);
         DeleteServerDeployResponse response = new DeleteServerDeployResponse();
         response.setContent("Server stack is deleted successfully");
         return response;
