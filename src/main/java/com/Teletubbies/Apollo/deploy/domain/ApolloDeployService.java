@@ -23,10 +23,6 @@ public class ApolloDeployService {
     @JoinColumn(name = "user_id")
     private ApolloUser apolloUser;
 
-    @OneToOne
-    @JoinColumn(name = "repository_id")
-    private Repo repo;
-
     @Column(name = "stack_name")
     private String stackName;
     @Column(name = "stack_type")
@@ -52,9 +48,9 @@ public class ApolloDeployService {
         updatedAt = new Date();
     }
 
-    public ApolloDeployService(ApolloUser user, Repo repo, String stackName, String endpoint, String stackType) {
+    public ApolloDeployService(ApolloUser user, String stackName, String endpoint, String stackType) {
         this.apolloUser = user;
-        this.repo = repo;
+//        this.repo = repo;
         this.stackName = stackName;
         this.endpoint = endpoint;
         this.stackType = stackType;

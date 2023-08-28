@@ -17,6 +17,7 @@ public enum CustomErrorCode {
     DUPLICATED_REPO_ERROR("409", "이미 존재하는 레포지토리입니다"),
     API_NOT_FOUND_ERROR("4300", "존재하지 않는 API입니다"),
     CREDENTIAL_NOT_FOUND_ERROR("4301", "존재하지 않는 크리덴셜입니다"),
+    NOT_FOUND_SERVICE_ERROR("4302", "존재하지 않는 서비스입니다"),
 
     RUNTIME_ERROR("9902", "알 수 없는 예외가 발생했습니다"),
     APOLLO_ERROR("9901", "처리하지 못한 예외입니다");
