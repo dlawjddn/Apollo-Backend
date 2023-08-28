@@ -63,7 +63,7 @@ public class PostController {
         log.info("게시글 연관 태그 조회 성공, 태그 dto 변환 성공");
 
         List<CommentInPostResponse> commentResponses = findPost.getComments().stream()
-                .map(comment -> new CommentInPostResponse(comment.getId(), comment.getApolloUser().getId(), comment.getContent(), comment.getCreateAt()))
+                .map(comment -> new CommentInPostResponse(comment.getId(), comment.getApolloUser().getId(), comment.getApolloUser().getLogin(), comment.getContent(), comment.getCreateAt()))
                 .toList();
         PostOnlyPostResponse postResponse =  new PostOnlyPostResponse(writer.getId(), writer.getLogin(), findPost.getId(), findPost.getTitle(), findPost.getContent(), tagOfPost, findPost.getCreateAt());
         log.info("게시글 연관 댓글 조회 성공, 댓글 dto 변환 성공");
