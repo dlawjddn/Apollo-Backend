@@ -9,10 +9,13 @@ import com.Teletubbies.Apollo.credential.exception.CredentialException;
 import com.Teletubbies.Apollo.credential.repository.CredentialRepository;
 import com.Teletubbies.Apollo.deploy.component.AwsClientComponent;
 import com.Teletubbies.Apollo.deploy.domain.ApolloDeployService;
+import com.Teletubbies.Apollo.deploy.dto.request.DeleteClientDeployRequest;
 import com.Teletubbies.Apollo.deploy.dto.request.PostClientDeployRequest;
 import com.Teletubbies.Apollo.deploy.dto.response.PostClientDeployResponse;
 import com.Teletubbies.Apollo.deploy.exception.DeploymentException;
 import com.Teletubbies.Apollo.deploy.repository.AwsServiceRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,8 +24,7 @@ import software.amazon.awssdk.services.cloudformation.model.*;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
-import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.CREDENTIAL_NOT_FOUND_ERROR;
-import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.NOT_FOUND_REPO_ERROR;
+import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.*;
 
 @Service
 @Slf4j
@@ -32,6 +34,9 @@ public class AWSCloudFormationClientService {
     private final CredentialRepository credentialRepository;
     private final AwsServiceRepository awsServiceRepository;
     private final UserService userService;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public AWSCloudFormationClientService(AwsClientComponent awsClientComponent, RepoRepository repoRepository, CredentialRepository credentialRepository, AwsServiceRepository awsServiceRepository, UserService userService) {
         this.awsClientComponent = awsClientComponent;
@@ -47,10 +52,10 @@ public class AWSCloudFormationClientService {
         String repoName = request.getRepoName();
         String EndPoint = createClientStack(cfClient, repoName);
         ApolloUser user = userService.getUserById(userId);
-        Repo repo = repoRepository.findByRepoName(repoName)
-                .orElseThrow(() -> new DeploymentException(NOT_FOUND_REPO_ERROR, "해당 레포가 존재하지 않습니다."));
+//        Repo repo = repoRepository.findByRepoName(repoName)
+//                .orElseThrow(() -> new DeploymentException(NOT_FOUND_REPO_ERROR, "해당 레포가 존재하지 않습니다."));
         ApolloDeployService apolloDeployService =
-                new ApolloDeployService(user, repo, repoName, EndPoint, "client");
+                new ApolloDeployService(user, repoName, EndPoint, "client");
         awsServiceRepository.save(apolloDeployService);
         return new PostClientDeployResponse(repoName, "client", EndPoint);
     }
@@ -93,29 +98,34 @@ public class AWSCloudFormationClientService {
                 .build();
     }
 
-    public void deleteClientStack(Long userId, String stackName) {
+    @Transactional
+    public void deleteClientStack(Long userId, DeleteClientDeployRequest request) {
         CloudFormationClient cfClient = awsClientComponent.createCFClient(userId);
         S3Client s3Client = awsClientComponent.createS3Client(userId);
-        ApolloUser user = userService.getUserById(userId);
+        ApolloDeployService service = awsServiceRepository.findById(request.getServiceId())
+                .orElseThrow(() -> new DeploymentException(NOT_FOUND_SERVICE_ERROR, "해당 서비스가 존재하지 않습니다."));
+        String stackName = service.getStackName();
         String bucketName = getBucketName(cfClient, stackName);
+
         if (bucketName != null) {
             deleteS3Bucket(s3Client, bucketName);
             deleteCloudFormationStack(cfClient, stackName);
         } else {
             log.info("버킷이 존재하지 않습니다.");
         }
-        ApolloDeployService apolloDeployService = awsServiceRepository.findByApolloUserAndStackName(user, stackName);
-        if (apolloDeployService != null) {
-            awsServiceRepository.delete(apolloDeployService);
-        }
+        if (!service.getApolloUser().getId().equals(userId))
+            throw new IllegalArgumentException("서비스 작성자와 삭제자가 일치하지 않습니다.");
+        awsServiceRepository.delete(service);
+        log.info("Delete service: " + stackName + " successfully");
     }
+
 
     private void deleteS3Bucket(S3Client s3Client, String bucketName) {
         try {
             emptyS3Bucket(s3Client, bucketName);
             DeleteBucketRequest deleteBucketRequest = DeleteBucketRequest.builder().bucket(bucketName).build();
             s3Client.deleteBucket(deleteBucketRequest);
-            log.info("Delete bucket: " + bucketName + " successfully");
+            log.info("다음 버킷을 삭제했습니다.: " + bucketName);
         } catch (Exception e) {
             log.info("버킷 삭제중에 에러가 발생했습니다.: " + e.getMessage());
         }

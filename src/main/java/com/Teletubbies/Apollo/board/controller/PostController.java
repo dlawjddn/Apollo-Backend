@@ -2,16 +2,13 @@ package com.Teletubbies.Apollo.board.controller;
 
 import com.Teletubbies.Apollo.auth.domain.ApolloUser;
 import com.Teletubbies.Apollo.auth.service.UserService;
-import com.Teletubbies.Apollo.board.domain.Comment;
 import com.Teletubbies.Apollo.board.domain.Post;
-import com.Teletubbies.Apollo.board.domain.PostWithTag;
 import com.Teletubbies.Apollo.board.dto.comment.response.CommentInPostResponse;
 import com.Teletubbies.Apollo.board.dto.post.request.DeletePostRequest;
 import com.Teletubbies.Apollo.board.dto.post.request.SavePostRequest;
 import com.Teletubbies.Apollo.board.dto.post.request.UpdatePostRequest;
 import com.Teletubbies.Apollo.board.dto.post.response.*;
 import com.Teletubbies.Apollo.board.dto.tag.ConvertTag;
-import com.Teletubbies.Apollo.board.service.CommentService;
 import com.Teletubbies.Apollo.board.service.PostService;
 import com.Teletubbies.Apollo.board.domain.Tag;
 import com.Teletubbies.Apollo.board.service.PostWithTagService;
@@ -33,7 +30,6 @@ public class PostController {
     private final TagService tagService;
     private final PostWithTagService postWithTagService;
     private final UserService userService;
-    private final CommentService commentService;
     @PostMapping("/board")
     public SavePostResponse savePost(@RequestBody SavePostRequest request){
         ApolloUser findUser = userService.getUserById(request.getUserId());
@@ -46,12 +42,12 @@ public class PostController {
         tags.forEach(tag -> postWithTagService.savePostWithTag(post, tag));
         log.info("태그와 게시물 연관 저장 완료");
 
-        return new SavePostResponse(post.getId(), findUser.getId());
+        return new SavePostResponse(post.getId(), findUser.getId(), findUser.getLogin());
     }
     @GetMapping("/board")
     public StartBoard findDataForBoardPage(@RequestParam int pageNum){
-        PageRequest pageRequest = PageRequest.of(pageNum - 1, 3, Sort.by("createAt").descending());
-        return new StartBoard(postService.findAllPosts(pageRequest), tagService.findAllTag());
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 20, Sort.by("createAt").descending());
+        return new StartBoard(postService.countAllPosts(), postService.findAllPosts(pageRequest), tagService.findAllTag());
     }
     @GetMapping("/tag")
     public List<ConvertTag> findAllTags() {return tagService.findAllTag();}
@@ -60,30 +56,36 @@ public class PostController {
         Post findPost = postService.findPostById(postId);
         log.info("게시글 조회 완료");
 
+        ApolloUser writer = findPost.getApolloUser();
         List<ConvertTag> tagOfPost = postWithTagService.findPostWithTagByPost(findPost).stream()
-                .map(postWithTag -> new ConvertTag(postWithTag.getTag().getId(), postWithTag.getTag().getName()))
+                .map(association -> new ConvertTag(association.getTag().getId(), association.getTag().getName()))
                 .toList();
-        log.info("게시글의 태그 조회 완료, 태그 dto 변환 완료");
+        log.info("게시글 연관 태그 조회 성공, 태그 dto 변환 성공");
 
-        PostOnlyPostResponse postResponse = new PostOnlyPostResponse(findPost.getApolloUser().getId(), findPost.getId(), findPost.getTitle(), findPost.getContent(), tagOfPost, findPost.getCreateAt());
-        log.info("게시글 dto 변환 완료");
-
-        List<CommentInPostResponse> commentResponses = commentService.findAllCommentByPost(findPost).stream()
-                .map(findComment -> new CommentInPostResponse(findComment.getId(), findComment.getApolloUser().getId(), findComment.getContent(), findComment.getCreateAt()))
+        List<CommentInPostResponse> commentResponses = findPost.getComments().stream()
+                .map(comment -> new CommentInPostResponse(comment.getId(), comment.getApolloUser().getId(), comment.getApolloUser().getLogin(), comment.getContent(), comment.getCreateAt()))
                 .toList();
-        log.info("게시글의 댓글 조회 완료, dto 변환 완료");
+        PostOnlyPostResponse postResponse =  new PostOnlyPostResponse(writer.getId(), writer.getLogin(), findPost.getId(), findPost.getTitle(), findPost.getContent(), tagOfPost, findPost.getCreateAt());
+        log.info("게시글 연관 댓글 조회 성공, 댓글 dto 변환 성공");
+
         return new PostWithAllDetailResponse(postResponse, commentResponses);
     }
-    /*
-    태그별 post 조회 로직도 만들어야 함!
-     */
-    @GetMapping("/board/title/{titleName}")
-    public List<PostNoContentResponse> findSimilarPostByTitle(@PathVariable String titleName){
-        return postService.findSimilarPostByTitle(titleName);
+    @GetMapping("/board/associate-with")
+    public PostSearchResponse findAllPostByTag(@RequestParam Long tagId, @RequestParam int pageNum){
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 20, Sort.by(Sort.Direction.DESC, "post"));
+        Tag findTag = tagService.findByTagId(tagId);
+        return new PostSearchResponse(postWithTagService.countAssociationByTag(findTag),
+                postWithTagService.findPagingPostWithTagByTag(findTag, pageRequest));
     }
-    @GetMapping("board/titleOrContent/{searchString}")
-    public List<PostNoContentResponse> findSimilarPostByTitleOrContent(@PathVariable String searchString){
-        return postService.findSimilarPostByTitleOrContent(searchString);
+    @GetMapping("/board/title/{titleName}/{pageNum}")
+    public PostSearchResponse findSimilarPostByTitle(@PathVariable String titleName, @PathVariable int pageNum){
+        PageRequest sortPageByNewCreated = PageRequest.of(pageNum - 1, 20, Sort.by(Sort.Direction.DESC, "createAt"));
+        return new PostSearchResponse(postService.countPostsHaveSimilarTitle(titleName), postService.findSimilarPostByTitle(titleName, sortPageByNewCreated));
+    }
+    @GetMapping("board/titleOrContent/{searchString}/{pageNum}")
+    public PostSearchResponse findSimilarPostByTitleOrContent(@PathVariable String searchString, @PathVariable int pageNum){
+        PageRequest sortPageByNewCreated = PageRequest.of(pageNum - 1, 20, Sort.by(Sort.Direction.DESC, "createAt"));
+        return new PostSearchResponse(postService.countPostsHaveSimilarTitleOrSimilarContent(searchString),postService.findSimilarPostByTitleOrContent(searchString, sortPageByNewCreated));
     }
     @PatchMapping("/board/{postId}")
     public UpdatePostResponse updatePost(@PathVariable Long postId, @RequestBody UpdatePostRequest request){
@@ -101,6 +103,7 @@ public class PostController {
     }
     @DeleteMapping("/board/{postId}")
     public String deletePost(@PathVariable Long postId, @RequestBody DeletePostRequest request){
+        log.info("postId: " + postId);
         return postService.deletePost(postId, request.getUserId());
     }
 }

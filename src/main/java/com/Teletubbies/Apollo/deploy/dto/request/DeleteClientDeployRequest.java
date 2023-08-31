@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 public class DeleteClientDeployRequest {
-    @JsonProperty("repoName")
-    private String repoName;
+    @JsonProperty("serviceId")
+    private Long serviceId;
 }

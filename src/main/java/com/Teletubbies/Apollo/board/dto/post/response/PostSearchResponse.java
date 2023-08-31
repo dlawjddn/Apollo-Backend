@@ -1,18 +1,16 @@
 package com.Teletubbies.Apollo.board.dto.post.response;
 
-import com.Teletubbies.Apollo.board.dto.tag.ConvertTag;
 import lombok.Data;
 
 import java.util.List;
+
 @Data
-public class StartBoard {
+public class PostSearchResponse {
     private Long count;
     private List<PostNoContentResponse> posts;
-    private List<ConvertTag> tags;
 
-    public StartBoard(Long count, List<PostNoContentResponse> posts, List<ConvertTag> tags) {
+    public PostSearchResponse(Long count, List<PostNoContentResponse> posts) {
         this.count = count;
         this.posts = posts;
-        this.tags = tags;
     }
 }

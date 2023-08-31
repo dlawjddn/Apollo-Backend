@@ -10,11 +10,14 @@ import com.Teletubbies.Apollo.credential.domain.Credential;
 import com.Teletubbies.Apollo.credential.repository.CredentialRepository;
 import com.Teletubbies.Apollo.deploy.component.AwsClientComponent;
 import com.Teletubbies.Apollo.deploy.domain.ApolloDeployService;
+import com.Teletubbies.Apollo.deploy.dto.request.DeleteServerDeployRequest;
 import com.Teletubbies.Apollo.deploy.dto.request.PostServerDeployRequest;
 import com.Teletubbies.Apollo.deploy.dto.response.PostServerDeployResponse;
+import com.Teletubbies.Apollo.deploy.exception.DeploymentException;
 import com.Teletubbies.Apollo.deploy.repository.AwsServiceRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
 import software.amazon.awssdk.services.cloudformation.model.*;
 import software.amazon.awssdk.services.ecr.EcrClient;
@@ -27,6 +30,7 @@ import software.amazon.awssdk.services.s3.model.*;
 import java.util.List;
 
 import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.NOT_FOUND_REPO_ERROR;
+import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.NOT_FOUND_SERVICE_ERROR;
 
 @Slf4j
 @Service
@@ -50,9 +54,7 @@ public class AWSCloudFormationServerService {
         String repoName = request.getRepoName();
         String EndPoint = "http://" + createServerStack(cfClient, repoName);
         ApolloUser user = userService.getUserById(userId);
-        Repo repo = repoRepository.findByRepoName(repoName)
-                .orElseThrow(() -> new ApolloException(NOT_FOUND_REPO_ERROR, "Repo 정보가 없습니다."));
-        ApolloDeployService apolloDeployService = new ApolloDeployService(user, repo, repoName, EndPoint, "server");
+        ApolloDeployService apolloDeployService = new ApolloDeployService(user, repoName, EndPoint, "server");
         awsServiceRepository.save(apolloDeployService);
         return new PostServerDeployResponse(repoName, "server", EndPoint);
     }
@@ -96,12 +98,15 @@ public class AWSCloudFormationServerService {
                 .build();
     }
 
-    public void deleteServerStack(Long userId, String stackName) {
+    @Transactional
+    public void deleteServerStack(Long userId, DeleteServerDeployRequest request) {
         CloudFormationClient cfClient = awsClientComponent.createCFClient(userId);
         ElasticLoadBalancingV2Client elbClient = awsClientComponent.createELBClient(userId);
         EcrClient ecrClient = awsClientComponent.createEcrClient(userId);
         S3Client s3Client = awsClientComponent.createS3Client(userId);
-        ApolloUser user = userService.getUserById(userId);
+        ApolloDeployService service = awsServiceRepository.findById(request.getServiceId())
+                .orElseThrow(() -> new DeploymentException(NOT_FOUND_SERVICE_ERROR, "서비스가 존재하지 않습니다."));
+        String stackName = service.getStackName();
         String ecrRepositoryName = getECRRepository(cfClient, stackName);
         String bucketName = getBucketName(cfClient, stackName);
         String loadBalancerArn = getLoadBalancerArnFromStack(cfClient, stackName);
@@ -126,10 +131,9 @@ public class AWSCloudFormationServerService {
         } else {
             log.info("버킷이 존재하지 않습니다.");
         }
-        ApolloDeployService service = awsServiceRepository.findByApolloUserAndStackName(user, stackName);
-        if (service != null) {
-            awsServiceRepository.delete(service);
-        }
+
+        awsServiceRepository.delete(service);
+        log.info("서비스 삭제 완료: " + service.getStackName());
     }
 
     private String getBucketName(CloudFormationClient cfClient, String stackName) {

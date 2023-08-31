@@ -9,7 +9,10 @@ import com.Teletubbies.Apollo.board.dto.tag.ConvertTag;
 import com.Teletubbies.Apollo.board.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +32,17 @@ public class PostService {
         log.info("서비스 단 진입 완료");
         return postRepository.save(new Post(apolloUser, savePostRequest.getTitle(), savePostRequest.getContent()));
     }
-    //read
+    //read - count
+    public Long countAllPosts(){
+        return postRepository.count();
+    }
+    public Long countPostsHaveSimilarTitle(String title){
+        return postRepository.countByTitleContainingIgnoreCase(title);
+    }
+    public Long countPostsHaveSimilarTitleOrSimilarContent(String searchString){
+        return postRepository.countByContentContainingIgnoreCaseOrTitleContainingIgnoreCase(searchString, searchString);
+    }
+    //read - find
     public Post findPostById(Long id){
         return postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글 아이디입니다."));
@@ -38,6 +51,7 @@ public class PostService {
         return postRepository.findAll(pageRequest).stream()
                 .map(findPost -> new PostNoContentResponse(
                         findPost.getApolloUser().getId(),
+                        findPost.getApolloUser().getLogin(),
                         findPost.getId(),
                         findPost.getTitle(),
                         postWithTagService.findPostWithTagByPost(findPost).stream()
@@ -47,11 +61,12 @@ public class PostService {
                 .toList();
 
     }
-    public List<PostNoContentResponse> findSimilarPostByTitle(String title){
-        List<Post> findPosts = postRepository.findByTitleContainingIgnoreCase(title);
+    public List<PostNoContentResponse> findSimilarPostByTitle(String title, PageRequest pageRequest){
+        Page<Post> findPosts = postRepository.findByTitleContainingIgnoreCase(title, pageRequest);
         return findPosts.stream()
                 .map(findPost -> new PostNoContentResponse(
                         findPost.getApolloUser().getId(),
+                        findPost.getApolloUser().getLogin(),
                         findPost.getId(),
                         findPost.getTitle(),
                         postWithTagService.findPostWithTagByPost(findPost).stream()
@@ -61,11 +76,12 @@ public class PostService {
                 .toList();
 
     }
-    public List<PostNoContentResponse> findSimilarPostByTitleOrContent(String searchString){
-        List<Post> findPosts = postRepository.findByContentContainingIgnoreCaseOrTitleContainingIgnoreCase(searchString, searchString);
+    public List<PostNoContentResponse> findSimilarPostByTitleOrContent(String searchString, PageRequest pageRequest){
+        Page<Post> findPosts = postRepository.findByContentContainingIgnoreCaseOrTitleContainingIgnoreCase(searchString, searchString, pageRequest);
         return findPosts.stream()
                 .map(findPost -> new PostNoContentResponse(
                         findPost.getApolloUser().getId(),
+                        findPost.getApolloUser().getLogin(),
                         findPost.getId(),
                         findPost.getTitle(),
                         postWithTagService.findPostWithTagByPost(findPost).stream()
@@ -98,7 +114,7 @@ public class PostService {
 
         tags.stream()
                 .forEach(tag -> {
-                    if (postWithTagService.findPostWithTagByTag(tag).size() == 0) // 어떤 태그와 연관된 게시글이 없는 경우 -> 태그도 삭제
+                    if (postWithTagService.countAssociationByTag(tag) == 0L) // 어떤 태그와 연관된 게시글이 없는 경우 -> 태그도 삭제
                         tagService.deleteTag(tag);
                 });
         log.info("태그에 해당된 게시글 확인 후 삭제 완료");

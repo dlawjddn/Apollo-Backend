@@ -30,7 +30,7 @@ public class ApolloUser {
     private List<Repo> repos;
     @OneToOne(mappedBy = "apolloUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Credential credential;
-    @OneToMany(mappedBy = "apolloUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "apolloUser", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ApolloDeployService> services;
 
     public ApolloUser(SaveUserRequest saveUserRequest) {
