@@ -14,13 +14,12 @@ import org.springframework.web.socket.config.annotation.*;
 @EnableWebSocket
 public class WebSocketConfig implements WebSocketConfigurer {
     private final CloudWatchService cloudWatchService;
-    private final AwsServiceRepository awsServiceRepository;
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(myHandler(), "/api/monitor").setAllowedOrigins("*");
     }
     @Bean
     public WebSocketHandler myHandler() {
-        return new ApolloWebSocketHandler(cloudWatchService, awsServiceRepository);
+        return new ApolloWebSocketHandler(cloudWatchService);
     }
 }

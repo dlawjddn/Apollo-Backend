@@ -18,13 +18,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static com.Teletubbies.Apollo.core.exception.CustomErrorCode.NOT_FOUND_SERVICE_ERROR;
-
 @Component
 @RequiredArgsConstructor
 public class ApolloWebSocketHandler extends TextWebSocketHandler {
     private final CloudWatchService cloudWatchService;
-    private final AwsServiceRepository awsServiceRepository;
     private final List<WebSocketSession> sessions = new CopyOnWriteArrayList<>();
 
     @Override
@@ -49,17 +46,9 @@ public class ApolloWebSocketHandler extends TextWebSocketHandler {
         for (WebSocketSession session: sessions) {
             if (session.isOpen()) {
                 String userId = (String) session.getAttributes().get("userId");
-                String dashboardName = findDashboardNameFromSession(session);
                 String dashboardBody = cloudWatchService.getCloudWatchMetrics("AWS/ECS", Long.parseLong(userId));
                 session.sendMessage(new TextMessage(dashboardBody));
             }
         }
-    }
-
-    private String findDashboardNameFromSession(WebSocketSession session) {
-        String serviceId = (String) session.getAttributes().get("serviceId");
-        ApolloDeployService apolloDeployService = awsServiceRepository.findById(Long.parseLong(serviceId))
-                .orElseThrow(() -> new MonitorException(NOT_FOUND_SERVICE_ERROR, "해당 서비스가 존재하지 않습니다."));
-        return apolloDeployService.getStackName();
     }
 }
