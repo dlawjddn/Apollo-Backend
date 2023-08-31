@@ -20,50 +20,6 @@ public class CloudWatchService {
     public CloudWatchService(AwsClientComponent awsClientComponent) {
         this.awsClientComponent = awsClientComponent;
     }
-
-    public String getDashboardBody(String dashboardName, Long userId) {
-        CloudWatchClient cloudWatchClient = awsClientComponent.createCloudWatchClient(userId);
-        GetDashboardRequest getDashboardRequest = GetDashboardRequest.builder()
-                .dashboardName(dashboardName)
-                .build();
-        GetDashboardResponse getDashboardResponse = cloudWatchClient.getDashboard(getDashboardRequest);
-        return getDashboardResponse.dashboardBody();
-    }
-
-//    public String getCloudWatchMetrics(String namespace, String metricName, Long userId) {
-//        CloudWatchClient cloudWatchClient = awsClientComponent.createCloudWatchClient(userId);
-//        List<Dimension> dimensions = new ArrayList<>();
-//        dimensions.add(Dimension.builder().name("UserId").value(userId.toString()).build());
-////        Instant startInstant = Instant.ofEpochMilli(System.currentTimeMillis() - 1000 * 60 * 60);
-////        Instant endInstant = Instant.ofEpochMilli(System.currentTimeMillis());
-//        Instant startInstant = Instant.now().minus(Duration.ofHours(1));
-//        Instant endInstant = Instant.now();
-//        GetMetricDataRequest request = GetMetricDataRequest.builder()
-//                .startTime(startInstant)
-//                .endTime(endInstant)
-//                .metricDataQueries(
-//                        MetricDataQuery.builder()
-//                                .id("m1")
-//                                .metricStat(
-//                                        MetricStat.builder()
-//                                                .metric(
-//                                                        Metric.builder()
-//                                                                .metricName(metricName)
-//                                                                .namespace(namespace)
-//                                                                .build()
-//                                                )
-//                                                .period(300)
-//                                                .stat("Average")
-//                                                .build()
-//                                )
-//                                .returnData(true)
-//                                .build()
-//                )
-//                .build();
-//        GetMetricDataResponse response = cloudWatchClient.getMetricData(request);
-//        String jsonMetric = convertMetricDataToJson(response);
-//        return jsonMetric;
-//    }
     public String getCloudWatchMetrics(String namespace, Long userId) {
         CloudWatchClient cloudWatchClient = awsClientComponent.createCloudWatchClient(userId);
         List<Dimension> dimensions = new ArrayList<>();
