@@ -22,7 +22,7 @@ public class Post {
     private String title;
     @Column(columnDefinition = "LONGTEXT")
     private String content;
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();
     private Date createAt;
     private Date updateAt;
