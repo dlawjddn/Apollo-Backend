@@ -6,20 +6,16 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: none
     properties:
       hibernate:
         show_sql: true
         format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
-  security:
-    user:
-      name: "dlawjddn"
-      password: "dlawjddn"
 
 springdoc:
   swagger-ui:
-    path: /api-docs
+    path: /api/docs
     use-root-path: true
 
 logging:
