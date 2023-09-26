@@ -10,6 +10,7 @@ public interface RepoRepository extends JpaRepository<Repo, Long> {
     List<Repo> findByOwnerLogin (String login);
     Optional<Repo> findByRepoName (String name);
     Optional<Repo> findByRepoUrl (String repoURL);
+    Optional<Repo> findByApolloUserIdAndRepoName (Long apolloUserId, String repoName);
     boolean existsById(Long id);
 
 }

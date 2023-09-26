@@ -49,18 +49,17 @@ public class AWSCloudFormationServerService {
     public PostServerDeployResponse saveService(Long userId, PostServerDeployRequest request) {
         CloudFormationClient cfClient = awsClientComponent.createCFClient(userId);
         String repoName = request.getRepoName();
-        String EndPoint = "http://" + createServerStack(cfClient, repoName);
+        String EndPoint = "http://" + createServerStack(cfClient, userId, repoName);
         ApolloUser user = userService.getUserById(userId);
         ApolloDeployService apolloDeployService = new ApolloDeployService(user, repoName, EndPoint, "server");
         awsServiceRepository.save(apolloDeployService);
         return new PostServerDeployResponse(repoName, "server", EndPoint);
     }
 
-    public String createServerStack(CloudFormationClient cfClient, String repoName) {
+    public String createServerStack(CloudFormationClient cfClient, Long userId, String repoName) {
         final String templateURL = "https://s3.amazonaws.com/apollo-script/api/cloudformation.yaml";
-        Repo repo = repoRepository.findByRepoName(repoName)
+        Repo repo = repoRepository.findByApolloUserIdAndRepoName(userId, repoName)
                 .orElseThrow(() -> new ApolloException(NOT_FOUND_REPO_ERROR, "Repo 정보가 없습니다."));
-        Long userId = repo.getApolloUser().getId();
         Credential credential = credentialRepository.findByApolloUserId(userId)
                 .orElseThrow(() -> new ApolloException(CustomErrorCode.CREDENTIAL_NOT_FOUND_ERROR, "Credential 정보가 없습니다."));
 
