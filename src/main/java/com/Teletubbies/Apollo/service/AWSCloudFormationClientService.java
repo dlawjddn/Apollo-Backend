@@ -13,6 +13,7 @@ import com.Teletubbies.Apollo.dto.deploy.request.PostClientDeployRequest;
 import com.Teletubbies.Apollo.dto.deploy.response.PostClientDeployResponse;
 import com.Teletubbies.Apollo.exception.DeploymentException;
 import com.Teletubbies.Apollo.repository.AwsServiceRepository;
+import com.Teletubbies.Apollo.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +33,7 @@ public class AWSCloudFormationClientService {
     private final AwsServiceRepository awsServiceRepository;
     private final UserService userService;
 
-    public AWSCloudFormationClientService(AwsClientComponent awsClientComponent, RepoRepository repoRepository, CredentialRepository credentialRepository, AwsServiceRepository awsServiceRepository, UserService userService) {
+    public AWSCloudFormationClientService(AwsClientComponent awsClientComponent, RepoRepository repoRepository, CredentialRepository credentialRepository, AwsServiceRepository awsServiceRepository, UserRepository userRepository, UserService userService) {
         this.awsClientComponent = awsClientComponent;
         this.repoRepository = repoRepository;
         this.credentialRepository = credentialRepository;
@@ -44,7 +45,7 @@ public class AWSCloudFormationClientService {
     public PostClientDeployResponse saveService(Long userId, PostClientDeployRequest request) {
         CloudFormationClient cfClient = awsClientComponent.createCFClient(userId);
         String repoName = request.getRepoName();
-        String EndPoint = createClientStack(cfClient, repoName);
+        String EndPoint = createClientStack(cfClient, userId, repoName);
         ApolloUser user = userService.getUserById(userId);
         ApolloDeployService apolloDeployService =
                 new ApolloDeployService(user, repoName, EndPoint, "client");
@@ -52,12 +53,10 @@ public class AWSCloudFormationClientService {
         return new PostClientDeployResponse(repoName, "client", EndPoint);
     }
 
-    public String createClientStack(CloudFormationClient cfClient, String repoName) {
+    public String createClientStack(CloudFormationClient cfClient, Long userId, String repoName) {
         final String templateURL = "https://s3.amazonaws.com/apollo-script/client/cloudformation.yaml";
-        Repo repo = repoRepository.findByRepoName(repoName)
+        Repo repo = repoRepository.findByApolloUserIdAndRepoName(userId, repoName)
                 .orElseThrow(() -> new DeploymentException(NOT_FOUND_REPO_ERROR, "해당 레포가 존재하지 않습니다."));
-        Long userId = repo.getApolloUser().getId();
-
         Credential credential = credentialRepository.findByApolloUserId(userId)
                 .orElseThrow(() -> new CredentialException(CREDENTIAL_NOT_FOUND_ERROR, "Credential 정보가 없습니다."));
 
